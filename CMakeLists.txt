@@ -24,6 +24,12 @@ else()
     message(FATAL_ERROR "Unknown Compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
+# ---------- Add Third Party Libraries ----------
+
+# spdlog
+set(SPDLOG_ENABLE_PCH ON CACHE BOOL " " FORCE)
+add_subdirectory(vendor/spdlog)
+
 # ---------- Add Subdirectories ----------
 
 add_subdirectory(core)
