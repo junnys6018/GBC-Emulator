@@ -1,3 +1,12 @@
 [submodule "vendor/spdlog"]
 	path = vendor/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "application/vendor/glad"]
+	path = application/vendor/glad
+	url = https://github.com/junnys6018/glad.git
+[submodule "application/vendor/glfw"]
+	path = application/vendor/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "application/vendor/imgui"]
+	path = application/vendor/imgui
+	url = https://github.com/junnys6018/imgui.git

@@ -30,6 +30,9 @@ endif()
 set(SPDLOG_ENABLE_PCH ON CACHE BOOL " " FORCE)
 add_subdirectory(vendor/spdlog)
 
+# Move libraries to its own folder
+set_property(TARGET spdlog PROPERTY FOLDER "vendor")
+
 # ---------- Add Subdirectories ----------
 
 add_subdirectory(core)

@@ -1,6 +1,12 @@
-#include <gbc.h>
+#include "application.h"
 
-int main()
+int main(int argc, char** argv)
 {
-    LOG_INFO("{}", gbc::HelloWorld());
+    using namespace app;
+
+    Application* app = Application::Start(argc, argv);
+    app->Run();
+    delete app;
+
+    return 0;
 }
