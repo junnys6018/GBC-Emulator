@@ -14,7 +14,7 @@ namespace app
 {
     bool Application::s_initialized = false;
 
-    Application* Application::Start(int, char**)
+    Application* Application::start(int, char**)
     {
         if (!s_initialized)
         {
@@ -23,33 +23,33 @@ namespace app
         }
         else
         {
-            LOG_ERROR("Attempt to call Application::Start() more than once");
+            LOG_ERROR("Attempt to call Application::start() more than once");
             exit(EXIT_FAILURE);
         }
     }
 
     Application::Application()
     {
-        gbc::Initialize();
-        LOG_INFO("{}", gbc::HelloWorld());
+        gbc::initialize();
+        LOG_INFO("{}", gbc::hello_world());
 
-        GLFWwindow* window = Glfw::Initialize();
-        ImGuiLayer::Initialize(window);
+        GLFWwindow* window = Glfw::initialize();
+        ImGuiLayer::initialize(window);
     }
 
     Application::~Application()
     {
-        ImGuiLayer::Shutdown();
-        Glfw::Shutdown();
+        ImGuiLayer::shutdown();
+        Glfw::shutdown();
     }
 
-    void Application::Run()
+    void Application::run()
     {
         // Game loop
         while (!glfwWindowShouldClose(Glfw::s_window))
         {
-            Glfw::Begin();
-            ImGuiLayer::Begin();
+            Glfw::begin();
+            ImGuiLayer::begin();
 
             // Rendering
 
@@ -59,8 +59,8 @@ namespace app
 
             ImGui::ShowDemoWindow();
 
-            ImGuiLayer::End();
-            Glfw::End();
+            ImGuiLayer::end();
+            Glfw::end();
         }
     }
 }

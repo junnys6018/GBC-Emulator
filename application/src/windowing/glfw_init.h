@@ -8,10 +8,10 @@ namespace app
     class Glfw
     {
     public:
-        static GLFWwindow* Initialize();
-        static void Shutdown();
-        static void Begin();
-        static void End();
+        static GLFWwindow* initialize();
+        static void shutdown();
+        static void begin();
+        static void end();
 
     public:
         static GLFWwindow* s_window;

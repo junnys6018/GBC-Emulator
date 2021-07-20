@@ -14,9 +14,9 @@ namespace gbc
     class Log
     {
     public:
-        static void Initialize();
+        static void initialize();
 
-        static Ref<spdlog::logger> GetLogger()
+        static Ref<spdlog::logger>& get_logger()
         {
             return s_logger;
         }
@@ -27,8 +27,8 @@ namespace gbc
 }
 
 // log macros
-#define LOG_TRACE(...) ::gbc::Log::GetLogger()->trace(__VA_ARGS__)
-#define LOG_INFO(...) ::gbc::Log::GetLogger()->info(__VA_ARGS__)
-#define LOG_WARN(...) ::gbc::Log::GetLogger()->warn(__VA_ARGS__)
-#define LOG_ERROR(...) ::gbc::Log::GetLogger()->error(__VA_ARGS__)
-#define LOG_CRITICAL(...) ::gbc::Log::GetLogger()->critical(__VA_ARGS__)
+#define LOG_TRACE(...) ::gbc::Log::get_logger()->trace(__VA_ARGS__)
+#define LOG_INFO(...) ::gbc::Log::get_logger()->info(__VA_ARGS__)
+#define LOG_WARN(...) ::gbc::Log::get_logger()->warn(__VA_ARGS__)
+#define LOG_ERROR(...) ::gbc::Log::get_logger()->error(__VA_ARGS__)
+#define LOG_CRITICAL(...) ::gbc::Log::get_logger()->critical(__VA_ARGS__)

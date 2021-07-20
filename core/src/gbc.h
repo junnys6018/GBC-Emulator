@@ -3,5 +3,5 @@
 
 namespace gbc
 {
-    char* HelloWorld();
+    char* hello_world();
 }

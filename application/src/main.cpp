@@ -4,8 +4,8 @@ int main(int argc, char** argv)
 {
     using namespace app;
 
-    Application* app = Application::Start(argc, argv);
-    app->Run();
+    Application* app = Application::start(argc, argv);
+    app->run();
     delete app;
 
     return 0;

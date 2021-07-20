@@ -5,8 +5,8 @@ namespace app
     class Application
     {
     public:
-        static Application* Start(int argc, char** argv);
-        void Run();
+        static Application* start(int argc, char** argv);
+        void run();
         ~Application();
 
     private:

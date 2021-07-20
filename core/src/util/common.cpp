@@ -3,8 +3,8 @@
 
 namespace gbc
 {
-    void Initialize()
+    void initialize()
     {
-        Log::Initialize();
+        Log::initialize();
     }
 }

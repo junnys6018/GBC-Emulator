@@ -8,9 +8,9 @@ namespace app
     class ImGuiLayer
     {
     public:
-        static void Initialize(GLFWwindow* window);
-        static void Shutdown();
-        static void Begin();
-        static void End();
+        static void initialize(GLFWwindow* window);
+        static void shutdown();
+        static void begin();
+        static void end();
     };
 }

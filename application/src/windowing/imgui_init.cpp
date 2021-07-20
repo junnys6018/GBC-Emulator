@@ -8,7 +8,7 @@
 
 namespace app
 {
-    void ImGuiLayer::Initialize(GLFWwindow* window)
+    void ImGuiLayer::initialize(GLFWwindow* window)
     {
         LOG_INFO("Initializing ImGui");
         IMGUI_CHECKVERSION();
@@ -35,7 +35,7 @@ namespace app
         ImGui_ImplOpenGL3_Init();
     }
 
-    void ImGuiLayer::Shutdown()
+    void ImGuiLayer::shutdown()
     {
         LOG_INFO("Shutting down ImGui");
         ImGui_ImplOpenGL3_Shutdown();
@@ -43,7 +43,7 @@ namespace app
         ImGui::DestroyContext();
     }
 
-    void ImGuiLayer::Begin()
+    void ImGuiLayer::begin()
     {
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -51,7 +51,7 @@ namespace app
         ImGui::NewFrame();
     }
 
-    void ImGuiLayer::End()
+    void ImGuiLayer::end()
     {
         ImGuiIO& io = ImGui::GetIO();
         ImGui::Render();

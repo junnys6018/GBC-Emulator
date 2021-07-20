@@ -13,7 +13,7 @@ namespace app
 {
     GLFWwindow* Glfw::s_window = NULL;
 
-    GLFWwindow* Glfw::Initialize()
+    GLFWwindow* Glfw::initialize()
     {
         LOG_INFO("Initializing GLFW context");
 
@@ -27,7 +27,7 @@ namespace app
         glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
         // Create a window
-        s_window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", NULL, NULL);
+        s_window = glfwCreateWindow(WIDTH, HEIGHT, "GBC Emulator - By Jun Lim", NULL, NULL);
         glfwMakeContextCurrent(s_window);
         glfwSwapInterval(1);
         if (s_window == NULL)
@@ -49,20 +49,20 @@ namespace app
         return s_window;
     }
 
-    void Glfw::Shutdown()
+    void Glfw::shutdown()
     {
         // Terminates GLFW, clearing any resources allocated by GLFW.
         LOG_INFO("Shutting down GLFW context");
         glfwTerminate();
     }
 
-    void Glfw::Begin()
+    void Glfw::begin()
     {
         // Check if any events have been activated (key pressed, mouse moved etc.) and call corresponding response functions
         glfwPollEvents();
     }
 
-    void Glfw::End()
+    void Glfw::end()
     {
         // Swap the screen buffers
         glfwSwapBuffers(s_window);
