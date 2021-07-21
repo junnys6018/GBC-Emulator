@@ -2,7 +2,7 @@
 
 namespace gbc
 {
-    char* hello_world()
+    const char* hello_world()
     {
         return "Hello World from gbc!";
     }

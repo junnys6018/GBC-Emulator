@@ -4,24 +4,14 @@
 
 namespace gbc
 {
-    constexpr i32 REG_B = 0;
-    constexpr i32 REG_C = 1;
-    constexpr i32 REG_D = 2;
-    constexpr i32 REG_E = 3;
-    constexpr i32 REG_H = 4;
-    constexpr i32 REG_L = 5;
-    constexpr i32 REG_IND_HL = 6;
-    constexpr i32 REG_A = 7;
-    constexpr i32 REG_IND_BC = 8;
-    constexpr i32 REG_IND_DE = 9;
-    constexpr i32 REG_IND_HL_INC = 10;
-    constexpr i32 REG_IND_HL_DEC = 11;
-    constexpr i32 NUM_REG = 12;
+    // Returns number of m-cycles needed to complete the instruction
+    class CPU;
+    using Operation = i32 (CPU::*)();
 
     struct Register
     {
-        u8 low;
-        u8 high;
+        u8 low = 0;
+        u8 high = 0;
         inline u16 get()
         {
             return (static_cast<u16>(high) << 8) | static_cast<u16>(low);
@@ -49,293 +39,151 @@ namespace gbc
             u8 h : 1; // half carry flag
             u8 c : 1; // carry flag
             u8 acc;   // accumulator
+            inline void set(u16 data)
+            {
+                std::memcpy(this, &data, sizeof(u16));
+            }
+            inline u16 get()
+            {
+                return std::bit_cast<u16>(*this);
+            }
         } AF;
         Register BC, DE, HL;
         u16 SP, PC;
+        bool IME = false;
+        bool IME_scheduled = false;
 
-        u64 m_num_m_cycles;
         Ref<Bus> m_bus;
+        static Operation s_opcodes[256];
+        static Operation s_cb_opcodes[256];
 
     private:
+        // Helpers
         template <i32 R>
-        inline u8 get_register()
-        {
-            static_assert(R < NUM_REG);
-
-            if constexpr (R == REG_B)
-                return BC.high;
-            if constexpr (R == REG_C)
-                return BC.low;
-            if constexpr (R == REG_D)
-                return DE.high;
-            if constexpr (R == REG_E)
-                return DE.low;
-            if constexpr (R == REG_H)
-                return HL.high;
-            if constexpr (R == REG_L)
-                return HL.low;
-            if constexpr (R == REG_IND_HL)
-                return m_bus->cpu_read_byte(HL.get());
-            if constexpr (R == REG_A)
-                return AF.acc;
-            if constexpr (R == REG_IND_BC)
-                return m_bus->cpu_read_byte(BC.get());
-            if constexpr (R == REG_IND_DE)
-                return m_bus->cpu_read_byte(DE.get());
-            if constexpr (R == REG_IND_HL_INC)
-            {
-                u16 addr = HL.get();
-                HL.set(addr + 1);
-                return m_bus->cpu_read_byte(addr);
-            }
-            if constexpr (R == REG_IND_HL_DEC)
-            {
-                u16 addr = HL.get();
-                HL.set(addr - 1);
-                return m_bus->cpu_read_byte(addr);
-            }
-        }
+        inline u8 get_register();
         template <i32 R>
-        inline void write_register(u8 data)
-        {
-            static_assert(R < NUM_REG);
-
-            if constexpr (R == REG_B)
-                BC.high = data;
-            if constexpr (R == REG_C)
-                BC.low = data;
-            if constexpr (R == REG_D)
-                DE.high = data;
-            if constexpr (R == REG_E)
-                DE.low = data;
-            if constexpr (R == REG_H)
-                HL.high = data;
-            if constexpr (R == REG_L)
-                HL.low = data;
-            if constexpr (R == REG_IND_HL)
-                m_bus->cpu_write_byte(HL.get(), data);
-            if constexpr (R == REG_A)
-                AF.acc = data;
-            if constexpr (R == REG_IND_BC)
-                return m_bus->cpu_write_byte(BC.get(), data);
-            if constexpr (R == REG_IND_DE)
-                return m_bus->cpu_write_byte(DE.get(), data);
-            if constexpr (R == REG_IND_HL_INC)
-            {
-                u16 addr = HL.get();
-                HL.set(addr + 1);
-                return m_bus->cpu_write_byte(addr, data);
-            }
-            if constexpr (R == REG_IND_HL_DEC)
-            {
-                u16 addr = HL.get();
-                HL.set(addr - 1);
-                return m_bus->cpu_write_byte(addr, data);
-            }
-        }
-
+        inline void write_register(u8 data);
         template <i32 R>
-        inline u16 get_register_16()
-        {
-            static_assert(R < 4);
-
-            if constexpr (R == 0)
-                return BC.get();
-            if constexpr (R == 1)
-                return DE.get();
-            if constexpr (R == 2)
-                return HL.get();
-            if constexpr (R == 3)
-                return SP;
-        }
-
+        inline u16 get_register_16();
         template <i32 R>
-        inline void write_register_16(u16 data)
-        {
-            static_assert(R < 4);
+        inline void write_register_16(u16 data);
+        template <i32 R>
+        inline u16 get_register2_16();
+        template <i32 R>
+        inline void write_register2_16(u16 data);
+        template <i32 F>
+        inline u8 get_flag();
+        inline u8 pop_stack();
+        inline void push_stack(u8 data);
+        inline u16 read_16(u16& addr);
+        inline void write_16(u16 addr, u16 data);
 
-            if constexpr (R == 0)
-                BC.set(data);
-            if constexpr (R == 1)
-                DE.set(data);
-            if constexpr (R == 2)
-                HL.set(data);
-            if constexpr (R == 3)
-                SP = data;
-        }
-
+        // Opcodes
+        i32 nop();
         template <i32 Ri, i32 Ro>
-        void ld()
-        {
-            u8 data = get_register<Ri>();
-            write_register<Ro>(data);
-        }
-
+        i32 ld();
+        i32 ld_sp_hl();
         template <i32 R>
-        void ld_imm()
-        {
-            u8 data = m_bus->cpu_read_byte(PC++);
-            write_register<R>(data);
-        }
-
+        i32 ld_imm();
         template <i32 R>
-        void ld_imm_16()
-        {
-            u16 low = m_bus->cpu_read_byte(PC++);
-            u16 high = m_bus->cpu_read_byte(PC++);
-            u16 data = (high << 8) | low;
-            write_register_16<R>(data);
-        }
-
+        i32 ld_imm_16();
+        i32 ld_ind_bc_a();
+        i32 ld_ind_de_a();
+        i32 ld_ind_a_bc();
+        i32 ld_ind_a_de();
+        i32 ld_ind_hli_a();
+        i32 ld_ind_hld_a();
+        i32 ld_ind_a_hli();
+        i32 ld_ind_a_hld();
+        i32 ld_ind_nn_sp();
+        i32 ld_ind_a_nn();
+        i32 ld_ind_nn_a();
+        i32 ldh_ind_n_a();
+        i32 ldh_ind_a_n();
+        i32 ldh_ind_a_c();
+        i32 ldh_ind_c_a();
+        i32 ld_hl_sp_n();
         template <i32 R>
-        void add()
-        {
-            u16 data = get_register<R>();
-            u16 result = static_cast<u16>(AF.acc) + data;
-
-            // Store result into acc
-            AF.acc = result & 0x00FF;
-
-            // Flags
-            AF.z = (AF.acc == 0);
-            AF.n = 0;
-            AF.h = ((((data & 0x0F) + (AF.acc & 0x0F)) & 0x10) == 0x10);
-            AF.c = (result > 0xFF);
-        }
-
+        i32 add();
         template <i32 R>
-        void adc()
-        {
-            u16 data = get_register<R>();
-            u16 result = static_cast<u16>(AF.acc) + data + AF.c;
-
-            // Store result into acc
-            AF.acc = result & 0x00FF;
-
-            // Flags
-            AF.z = (AF.acc == 0);
-            AF.n = 0;
-            AF.h = ((((data & 0x0F) + (AF.acc & 0x0F) + AF.c) & 0x10) == 0x10);
-            AF.c = (result > 0xFF);
-        }
-
+        i32 add_16();
+        i32 add_sp_imm_8();
         template <i32 R>
-        void sub()
-        {
-            u16 data = get_register<R>();
-            u16 result = static_cast<u16>(AF.acc) + (data ^ 0x00FF) + 1;
-
-            // Store result into acc
-            AF.acc = result & 0x00FF;
-
-            // Flags
-            AF.z = (AF.acc == 0);
-            AF.n = 1;
-            AF.h = !(((((data & 0x0F) ^ 0x0F) + 1 + (AF.acc & 0x0F)) & 0x10) == 0x10);
-            AF.c = !(result > 0xFF);
-        }
-
+        i32 adc();
         template <i32 R>
-        void sbc()
-        {
-            u16 data = get_register<R>();
-            u16 result = static_cast<u16>(AF.acc) + ((data + AF.c) ^ 0x00FF);
-
-            // Store result into acc
-            AF.acc = result & 0x00FF;
-
-            // Flags
-            AF.z = (AF.acc == 0);
-            AF.n = 1;
-            AF.h = !(((((data & 0x0F) ^ 0x0F) + 1 + (AF.acc & 0x0F)) & 0x10) == 0x10);
-            AF.c = !(result > 0xFF);
-        }
-        // clang-format off
+        i32 sub();
         template <i32 R>
-        void and()
-        {
-            AF.acc &= get_register<R>();
-
-            // Flags
-            AF.z = (AF.acc == 0);
-            AF.n = 0;
-            AF.h = 1;
-            AF.c = 0;
-        }
-
+        i32 sbc();
+        // c++ alternative tokens reserves keywords 'and', 'xor' and 'or'. Hence the use of underscores
         template <i32 R>
-        void xor()
-        {
-            AF.acc ^= get_register<R>();
-
-            // Flags
-            AF.z = (AF.acc == 0);
-            AF.n = 0;
-            AF.h = 0;
-            AF.c = 0;
-        }
-
+        i32 _and();
         template <i32 R>
-        void or()
-        {
-            AF.acc |= get_register<R>();
-
-            // Flags
-            AF.z = (AF.acc == 0);
-            AF.n = 0;
-            AF.h = 0;
-            AF.c = 0;
-        }
-        // clang-format on
+        i32 _xor();
         template <i32 R>
-        void cp()
-        {
-            u16 data = get_register<R>();
-            u16 result = static_cast<u16>(AF.acc) + (data ^ 0x00FF) + 1;
-
-            // Flags
-            AF.z = (result & 0x00FF) == 0;
-            AF.n = 1;
-            AF.h = !(((((data & 0x0F) ^ 0x0F) + 1 + (AF.acc & 0x0F)) & 0x10) == 0x10);
-            AF.c = !(result > 0xFF);
-        }
-
+        i32 _or();
         template <i32 R>
-        void inc()
-        {
-            u8 reg = get_register<R>();
-            write_register<R>(reg + 1);
-
-            // Flags
-            AF.z = ((reg + 1) == 0);
-            AF.n = 0;
-            AF.h = (((reg & 0x0F) + 1) & 0x10) == 0x10;
-        }
-
+        i32 cp();
         template <i32 R>
-        void dec()
-        {
-            u8 reg = get_register<R>();
-            write_register<R>(reg - 1);
-
-            // Flags
-            AF.z = ((reg - 1) == 0);
-            AF.n = 1;
-            AF.h = (reg & 0x0F) == 0;
-        }
-
+        i32 inc();
         template <i32 R>
-        void inc_16()
-        {
-            u16 reg = get_register_16<R>();
-            write_register_16<R>(reg + 1);
-        }
-
+        i32 dec();
         template <i32 R>
-        void dec_16()
-        {
-            u16 reg = get_register_16<R>();
-            write_register_16<R>(reg - 1);
-        }
+        i32 inc_16();
+        template <i32 R>
+        i32 dec_16();
+        template <i32 F>
+        i32 jr();
+        i32 rlca();
+        i32 rrca();
+        i32 rla();
+        i32 rra();
+        i32 daa();
+        i32 cpl();
+        i32 scf();
+        i32 ccf();
+        template <u8 ADDR>
+        i32 rst();
+        template <i32 R>
+        i32 push();
+        template <i32 R>
+        i32 pop();
+        template <i32 F>
+        i32 jp();
+        i32 jp_hl();
+        template <i32 F>
+        i32 ret();
+        template <i32 F>
+        i32 call();
+        i32 reti();
+        i32 di();
+        i32 ei();
+        i32 stop();
+        i32 halt();
+
+        // cb prefixed opcodes
+        template <i32 R>
+        i32 cb_rlc();
+        template <i32 R>
+        i32 cb_rrc();
+        template <i32 R>
+        i32 cb_rl();
+        template <i32 R>
+        i32 cb_rr();
+        template <i32 R>
+        i32 cb_sla();
+        template <i32 R>
+        i32 cb_sra();
+        template <i32 R>
+        i32 cb_swap();
+        template <i32 R>
+        i32 cb_srl();
+        template <i32 bit, i32 R>
+        i32 cb_bit();
+        template <i32 bit, i32 R>
+        i32 cb_res();
+        template <i32 bit, i32 R>
+        i32 cb_set();
+
+        i32 err(); // All invalid opcodes captured here
     };
 }

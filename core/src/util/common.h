@@ -39,4 +39,20 @@ namespace gbc
     {
         return std::make_shared<T>(std::forward<Args>(args)...);
     }
+
+    template <typename T>
+    constexpr inline u8 bit(T data, i32 digit)
+    {
+        return (data & (1 << digit)) != 0;
+    }
+
+    inline u8 msb(u16 data)
+    {
+        return (data & 0xFF00) >> 8;
+    }
+
+    inline u8 lsb(u16 data)
+    {
+        return data & 0x00FF;
+    }
 }
