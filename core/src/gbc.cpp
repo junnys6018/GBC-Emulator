@@ -6,4 +6,8 @@ namespace gbc
     {
         return "Hello World from gbc!";
     }
+
+    GBC::GBC() : m_cpu(&m_bus)
+    {
+    }
 }

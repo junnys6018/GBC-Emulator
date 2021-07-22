@@ -12,10 +12,7 @@ namespace gbc
     {
         u8 low = 0;
         u8 high = 0;
-        inline u16 get()
-        {
-            return (static_cast<u16>(high) << 8) | static_cast<u16>(low);
-        }
+        inline u16 get() { return (static_cast<u16>(high) << 8) | static_cast<u16>(low); }
         inline void set(u16 value)
         {
             low = value & 0x00FF;
@@ -23,13 +20,23 @@ namespace gbc
         }
     };
 
+    struct CPUData
+    {
+        u16 AF, BC, DE, HL, SP, PC;
+        bool IME;
+        bool IME_scheduled;
+        u64 total_machine_cycles;
+        u32 remaining_machine_cycles;
+    };
+
     class CPU
     {
     public:
-        CPU(const Ref<Bus>& bus);
+        CPU(Bus* bus);
         void clock();
         void step();
         void run_until(u64 clock);
+        CPUData get_cpu_data();
 
     private:
         struct
@@ -40,28 +47,23 @@ namespace gbc
             u8 h : 1; // half carry flag
             u8 c : 1; // carry flag
             u8 acc;   // accumulator
-            inline void set(u16 data)
-            {
-                std::memcpy(this, &data, sizeof(u16));
-            }
-            inline u16 get()
-            {
-                return std::bit_cast<u16>(*this);
-            }
+            inline void set(u16 data) { std::memcpy(this, &data, sizeof(u16)); }
+            inline u16 get() { return std::bit_cast<u16>(*this); }
         } AF;
         Register BC, DE, HL;
-        u16 SP, PC;
+        u16 SP, PC = 0;
         bool IME = false;
         bool IME_scheduled = false;
         u64 m_total_machine_cycles = 0;
         u32 m_remaining_machine_cycles = 0;
 
-        Ref<Bus> m_bus;
+        Bus* m_bus;
         static Operation s_opcodes[256];
         static Operation s_cb_opcodes[256];
 
     private:
         Operation get_next_instruction();
+
     private:
         // Helpers
         template <i32 R>

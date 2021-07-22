@@ -2,12 +2,9 @@
 #include <util/log.h>
 
 // Window dimensions
-static const GLuint WIDTH = 800, HEIGHT = 600;
+static const GLuint WIDTH = 1080, HEIGHT = 720;
 
-static void glfw_error_callback(int error, const char* description)
-{
-    LOG_ERROR("glfw error {}: {}", error, description);
-}
+static void glfw_error_callback(int error, const char* description) { LOG_ERROR("glfw error {}: {}", error, description); }
 
 namespace app
 {
@@ -24,7 +21,7 @@ namespace app
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
         // Create a window
         s_window = glfwCreateWindow(WIDTH, HEIGHT, "GBC Emulator - By Jun Lim", NULL, NULL);
@@ -66,5 +63,11 @@ namespace app
     {
         // Swap the screen buffers
         glfwSwapBuffers(s_window);
+    }
+    std::pair<u32, u32> Glfw::get_window_size()
+    {
+        i32 w, h;
+        glfwGetWindowSize(s_window, &w, &h);
+        return {w, h};
     }
 }

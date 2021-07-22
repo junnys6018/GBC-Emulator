@@ -4,6 +4,7 @@
 #include <backends/imgui_impl_opengl3.h>
 #include <imgui.h>
 
+#include "windowing/glfw_init.h"
 #include <util/log.h>
 
 namespace app
@@ -17,7 +18,6 @@ namespace app
 
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;   // Enable Multi-Viewport / Platform Windows
 
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();

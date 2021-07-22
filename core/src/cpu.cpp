@@ -22,9 +22,7 @@
 
 namespace gbc
 {
-    CPU::CPU(const Ref<Bus>& bus) : m_bus(bus)
-    {
-    }
+    CPU::CPU(Bus* bus) : m_bus(bus) {}
 
     void CPU::clock()
     {
@@ -48,9 +46,7 @@ namespace gbc
         m_total_machine_cycles += (this->*operation)();
     }
 
-    void CPU::run_until(u64 clock)
-    {
-    }
+    void CPU::run_until(u64 clock) {}
 
     Operation CPU::get_next_instruction()
     {
@@ -62,6 +58,22 @@ namespace gbc
         }
 
         return s_opcodes[opcode];
+    }
+
+    CPUData CPU::get_cpu_data()
+    {
+        CPUData data;
+        data.AF = AF.get();
+        data.BC = BC.get();
+        data.DE = DE.get();
+        data.HL = HL.get();
+        data.SP = SP;
+        data.PC = PC;
+        data.IME = IME;
+        data.IME_scheduled = IME_scheduled;
+        data.total_machine_cycles = m_total_machine_cycles;
+        data.remaining_machine_cycles = m_remaining_machine_cycles;
+        return data;
     }
 
     template <i32 R>
@@ -173,14 +185,8 @@ namespace gbc
             return other_val;
     }
 
-    inline u8 CPU::pop_stack()
-    {
-        return m_bus->cpu_read_byte(SP++);
-    }
-    inline void CPU::push_stack(u8 data)
-    {
-        m_bus->cpu_write_byte(--SP, data);
-    }
+    inline u8 CPU::pop_stack() { return m_bus->cpu_read_byte(SP++); }
+    inline void CPU::push_stack(u8 data) { m_bus->cpu_write_byte(--SP, data); }
     inline u16 CPU::read_16(u16& addr)
     {
         u16 lsb = m_bus->cpu_read_byte(addr++);
@@ -194,10 +200,7 @@ namespace gbc
     }
 
     // opcode: 0x00
-    i32 CPU::nop()
-    {
-        return 1;
-    }
+    i32 CPU::nop() { return 1; }
 
     // opcode: 0b01yyyzzz
     template <i32 Ri, i32 Ro>

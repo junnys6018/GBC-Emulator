@@ -1,4 +1,6 @@
 #pragma once
+#include <gbc.h>
+using namespace gbc;
 
 namespace app
 {
@@ -11,6 +13,10 @@ namespace app
 
     private:
         Application();
+        void draw_cpu_window();
+
+    private:
+        Scope<GBC> m_gbc;
         static bool s_initialized;
     };
 }

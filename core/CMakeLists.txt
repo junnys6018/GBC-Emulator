@@ -20,8 +20,7 @@ target_precompile_headers(core
         <iostream>
         <memory>
         <utility>
-        <cmath>
-        <cstdlib>
+        <bit>
         <array>
         <map>
         <set>
@@ -30,4 +29,7 @@ target_precompile_headers(core
         <unordered_map>
         <unordered_set>
         <vector>
+        <cmath>
+        <cstdlib>
+        <cstring>
 )
