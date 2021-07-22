@@ -22,16 +22,46 @@
 
 namespace gbc
 {
+    CPU::CPU(const Ref<Bus>& bus) : m_bus(bus)
+    {
+    }
+
     void CPU::clock()
     {
+        m_total_machine_cycles++;
+        if (m_remaining_machine_cycles == 0)
+        {
+            auto operation = get_next_instruction();
+            m_remaining_machine_cycles = (this->*operation)();
+            ASSERT(m_remaining_machine_cycles != 0);
+        }
+        m_remaining_machine_cycles--;
+    }
+
+    void CPU::step()
+    {
+        // Add remaining cycles for the current instruction, if any
+        m_total_machine_cycles += m_remaining_machine_cycles;
+        m_remaining_machine_cycles = 0;
+
+        auto operation = get_next_instruction();
+        m_total_machine_cycles += (this->*operation)();
     }
 
     void CPU::run_until(u64 clock)
     {
     }
 
-    CPU::CPU(const Ref<Bus>& bus) : m_bus(bus)
+    Operation CPU::get_next_instruction()
     {
+        u8 opcode = m_bus->cpu_read_byte(PC++);
+        if (opcode == 0xCB)
+        {
+            opcode = m_bus->cpu_read_byte(PC++);
+            return s_cb_opcodes[opcode];
+        }
+
+        return s_opcodes[opcode];
     }
 
     template <i32 R>
@@ -817,7 +847,7 @@ namespace gbc
         AF.n = 0;
         AF.h = 0;
         AF.c = ((reg & 0x80) != 0);
-        write_register((reg << 1) | AF.c);
+        write_register<R>((reg << 1) | AF.c);
         return ind_or_imm(R, 4, 2);
     }
 
@@ -830,7 +860,7 @@ namespace gbc
         AF.n = 0;
         AF.h = 0;
         AF.c = (reg & 0x01);
-        write_register((reg >> 1) | (AF.c << 7));
+        write_register<R>((reg >> 1) | (AF.c << 7));
         return ind_or_imm(R, 4, 2);
     }
 
@@ -935,7 +965,7 @@ namespace gbc
     i32 CPU::cb_res()
     {
         u8 reg = get_register<R>();
-        write_register(reg & ~(1 << bit));
+        write_register<R>(reg & ~(1 << bit));
         return ind_or_imm(R, 4, 2);
     }
 
@@ -951,7 +981,7 @@ namespace gbc
     i32 CPU::err()
     {
         LOG_ERROR("Invalid opcode");
-        return 0;
+        return 1;
     }
 
     // clang-format off

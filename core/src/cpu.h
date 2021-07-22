@@ -28,6 +28,7 @@ namespace gbc
     public:
         CPU(const Ref<Bus>& bus);
         void clock();
+        void step();
         void run_until(u64 clock);
 
     private:
@@ -52,11 +53,15 @@ namespace gbc
         u16 SP, PC;
         bool IME = false;
         bool IME_scheduled = false;
+        u64 m_total_machine_cycles = 0;
+        u32 m_remaining_machine_cycles = 0;
 
         Ref<Bus> m_bus;
         static Operation s_opcodes[256];
         static Operation s_cb_opcodes[256];
 
+    private:
+        Operation get_next_instruction();
     private:
         // Helpers
         template <i32 R>
