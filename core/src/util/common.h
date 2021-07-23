@@ -46,13 +46,9 @@ namespace gbc
         return (data & (1 << digit)) != 0;
     }
 
-    inline u8 msb(u16 data)
-    {
-        return (data & 0xFF00) >> 8;
-    }
+    inline u8 msb(u16 data) { return (data & 0xFF00) >> 8; }
 
-    inline u8 lsb(u16 data)
-    {
-        return data & 0x00FF;
-    }
+    inline u8 lsb(u16 data) { return data & 0x00FF; }
+
+    std::vector<u8> read_file(const std::string& filename);
 }

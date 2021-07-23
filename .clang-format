@@ -5,6 +5,7 @@ TabWidth: 4
 ContinuationIndentWidth: 4
 BreakBeforeBraces: Allman
 AllowShortBlocksOnASingleLine: Always
+AllowShortCaseLabelsOnASingleLine: true
 IndentCaseLabels: false
 PointerAlignment: Left
 AccessModifierOffset: -4

@@ -5,17 +5,15 @@
 
 namespace gbc
 {
-    const char* hello_world();
-
     class GBC
     {
     public:
-        GBC();
+        GBC(const std::string& file);
         CPUData get_cpu_data() { return m_cpu.get_cpu_data(); }
-        u8* get_memory() { return m_bus.get_memory(); }
         void step() { m_cpu.step(); }
 
     private:
+        Scope<Cartridge> m_cartridge;
         Bus m_bus;
         CPU m_cpu;
     };

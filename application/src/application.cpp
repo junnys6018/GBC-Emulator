@@ -33,12 +33,11 @@ namespace app
     Application::Application()
     {
         gbc::initialize();
-        LOG_INFO("{}", gbc::hello_world());
 
         GLFWwindow* window = Glfw::initialize();
         ImGuiLayer::initialize(window);
 
-        m_gbc = create_scope<GBC>();
+        m_gbc = create_scope<GBC>("04-op r,imm.gb");
     }
 
     Application::~Application()
@@ -52,7 +51,6 @@ namespace app
         static MemoryEditor memory_view;
         memory_view.ReadOnly = true;
         memory_view.OptShowAscii = false;
-        u8* memory = m_gbc->get_memory();
 
         // Game loop
         while (!glfwWindowShouldClose(Glfw::s_window))
@@ -63,9 +61,9 @@ namespace app
 
             // Rendering
             draw_cpu_window();
-            memory_view.DrawWindow("Memory Editor", m_gbc->get_memory(), 65536);
 
-            m_gbc->step();
+            if (!m_paused)
+                m_gbc->step();
 
             // Clear the colorbuffer
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -93,6 +91,9 @@ namespace app
         {
             m_gbc->step();
         }
+        ImGui::SameLine();
+        ImGui::Checkbox("Pause", &m_paused);
         ImGui::End();
     }
+    void Application::draw_disassembly() {}
 }

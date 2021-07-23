@@ -4,6 +4,7 @@ add_library(core STATIC ${SOURCES})
 
 source_group(" " REGULAR_EXPRESSION "src/.*")
 source_group(util REGULAR_EXPRESSION "src/util/.*")
+source_group(mbc REGULAR_EXPRESSION "src/mbc/.*")
 
 target_include_directories(core PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -20,9 +21,11 @@ target_precompile_headers(core
         <iostream>
         <memory>
         <utility>
+        <optional>
         <bit>
         <array>
         <map>
+        <fstream>
         <set>
         <sstream>
         <string>

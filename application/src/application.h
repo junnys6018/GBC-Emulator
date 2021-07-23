@@ -14,9 +14,12 @@ namespace app
     private:
         Application();
         void draw_cpu_window();
+        void draw_disassembly();
 
     private:
         Scope<GBC> m_gbc;
+        bool m_paused = true;
+
         static bool s_initialized;
     };
 }

@@ -27,6 +27,12 @@ namespace gbc
     void CPU::clock()
     {
         m_total_machine_cycles++;
+        if (IME_scheduled)
+        {
+            IME_scheduled = false;
+            IME = true;
+        }
+
         if (m_remaining_machine_cycles == 0)
         {
             auto operation = get_next_instruction();
@@ -41,6 +47,12 @@ namespace gbc
         // Add remaining cycles for the current instruction, if any
         m_total_machine_cycles += m_remaining_machine_cycles;
         m_remaining_machine_cycles = 0;
+
+        if (IME_scheduled)
+        {
+            IME_scheduled = false;
+            IME = true;
+        }
 
         auto operation = get_next_instruction();
         m_total_machine_cycles += (this->*operation)();
