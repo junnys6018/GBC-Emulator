@@ -72,7 +72,7 @@ namespace gbc
         return s_opcodes[opcode];
     }
 
-    CPUData CPU::get_cpu_data()
+    CPUData CPU::get_cpu_data() const
     {
         CPUData data;
         data.AF = AF.get();

@@ -15,4 +15,9 @@ namespace gbc
         // TODO
         return m_rom[addr];
     }
+    u8 MBC1::peek_cartridge(u16 addr) const
+    {
+        // TODO
+        return m_rom[addr];
+    }
 }

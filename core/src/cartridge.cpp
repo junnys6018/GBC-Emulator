@@ -2,6 +2,7 @@
 #include "util/log.h"
 
 #include "mbc/mbc1.h"
+#include "mbc/rom.h"
 
 namespace gbc
 {
@@ -149,6 +150,7 @@ namespace gbc
     log_header_info(hi);                                                                                                         \
     switch (hi.mbc_type)                                                                                                         \
     {                                                                                                                            \
+    case 0x00: /* ROM only*/ return create_scope<ROM>(fn(rom), hi);                                                              \
     case 0x01: /* MBC1 */ return create_scope<MBC1>(fn(rom), hi);                                                                \
     default: /* Capture unimplemented mbc's */ LOG_ERROR("Not yet implemented mbc: {}", get_cartridge_type(hi.mbc_type));        \
     }

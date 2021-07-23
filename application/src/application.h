@@ -19,6 +19,7 @@ namespace app
     private:
         Scope<GBC> m_gbc;
         bool m_paused = true;
+        u32 m_step_count = 0;
 
         static bool s_initialized;
     };

@@ -12,6 +12,8 @@
 
 #include <imgui_memory_editor.h>
 
+#include "debug/disassembly.h"
+
 namespace app
 {
     bool Application::s_initialized = false;
@@ -37,7 +39,7 @@ namespace app
         GLFWwindow* window = Glfw::initialize();
         ImGuiLayer::initialize(window);
 
-        m_gbc = create_scope<GBC>("roms/04-op r,imm.gb");
+        m_gbc = create_scope<GBC>("roms/test.gb");
     }
 
     Application::~Application()
@@ -48,10 +50,8 @@ namespace app
 
     void Application::run()
     {
-        static MemoryEditor memory_view;
-        memory_view.ReadOnly = true;
-        memory_view.OptShowAscii = false;
-
+        static DisassemblyWindow disassembly_window;
+        u32 cnt = 500;
         // Game loop
         while (!glfwWindowShouldClose(Glfw::s_window))
         {
@@ -61,6 +61,13 @@ namespace app
 
             // Rendering
             draw_cpu_window();
+            disassembly_window.draw_window("Disassembly", *m_gbc, m_gbc->get_pc());
+
+            if (m_step_count < cnt)
+            {
+                m_gbc->step();
+                m_step_count++;
+            }
 
             if (!m_paused)
                 m_gbc->step();
@@ -90,7 +97,10 @@ namespace app
         if (ImGui::Button("step"))
         {
             m_gbc->step();
+            m_step_count++;
         }
+        ImGui::SameLine();
+        ImGui::Text("Count: %i", m_step_count);
         ImGui::SameLine();
         ImGui::Checkbox("Pause", &m_paused);
         ImGui::End();

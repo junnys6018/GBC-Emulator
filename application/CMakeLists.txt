@@ -22,6 +22,7 @@ add_executable(application ${SOURCES})
 
 source_group(" " REGULAR_EXPRESSION "src/.*")
 source_group(windowing REGULAR_EXPRESSION "src/windowing/.*")
+source_group(debug REGULAR_EXPRESSION "src/debug/.*")
 
 target_include_directories(application PUBLIC
     ${CMAKE_SOURCE_DIR}/core/src

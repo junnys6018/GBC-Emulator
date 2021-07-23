@@ -12,7 +12,7 @@ namespace gbc
     {
         u8 low = 0;
         u8 high = 0;
-        inline u16 get() { return (static_cast<u16>(high) << 8) | static_cast<u16>(low); }
+        inline u16 get() const { return (static_cast<u16>(high) << 8) | static_cast<u16>(low); }
         inline void set(u16 value)
         {
             low = value & 0x00FF;
@@ -36,7 +36,8 @@ namespace gbc
         void clock();
         void step();
         void run_until(u64 clock);
-        CPUData get_cpu_data();
+        CPUData get_cpu_data() const;
+        inline u16 get_pc() const { return PC; }
 
     private:
         struct
@@ -48,10 +49,10 @@ namespace gbc
             u8 c : 1; // carry flag
             u8 acc;   // accumulator
             inline void set(u16 data) { std::memcpy(this, &data, sizeof(u16)); }
-            inline u16 get() { return std::bit_cast<u16>(*this); }
+            inline u16 get() const { return std::bit_cast<u16>(*this); }
         } AF;
         Register BC, DE, HL;
-        u16 SP, PC = 0;
+        u16 SP, PC = 0x100;
         bool IME = false;
         bool IME_scheduled = false;
         u64 m_total_machine_cycles = 0;

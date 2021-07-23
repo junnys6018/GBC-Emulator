@@ -31,6 +31,7 @@ namespace gbc
     public:
         virtual void write_cartridge(u16 addr, u8 data) = 0;
         virtual u8 read_cartridge(u16 addr) = 0;
+        virtual u8 peek_cartridge(u16 addr) const = 0;
         static Scope<Cartridge> from_rom(const std::vector<u8>& rom);
         static Scope<Cartridge> from_rom(std::vector<u8>&& rom);
 

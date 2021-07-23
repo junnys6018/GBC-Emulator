@@ -10,6 +10,7 @@ namespace gbc
         Bus(Cartridge* cartridge);
         u8 cpu_read_byte(u16 addr);
         void cpu_write_byte(u16 addr, u8 byte);
+        u8 peek_byte(u16 addr) const;
 
     private:
         Cartridge* m_cartridge;
