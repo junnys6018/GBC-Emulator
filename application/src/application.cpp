@@ -37,7 +37,7 @@ namespace app
         GLFWwindow* window = Glfw::initialize();
         ImGuiLayer::initialize(window);
 
-        m_gbc = create_scope<GBC>("04-op r,imm.gb");
+        m_gbc = create_scope<GBC>("roms/04-op r,imm.gb");
     }
 
     Application::~Application()

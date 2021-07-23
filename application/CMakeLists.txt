@@ -41,3 +41,6 @@ target_link_libraries(application PUBLIC
 target_compile_definitions(application PUBLIC SPDLOG_COMPILED_LIB)
 
 target_precompile_headers(application REUSE_FROM core)
+
+# set working dir when debugging on visual studio
+set_property(TARGET application PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/")

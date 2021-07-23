@@ -19,6 +19,10 @@ namespace app
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
 
+        // Load font
+        ImFont* font = io.Fonts->AddFontFromFileTTF("assets/Consola.ttf", 14);
+        //ImGui::PushFont(font);
+
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
 
