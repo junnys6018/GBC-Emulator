@@ -2,8 +2,6 @@
 
 #include <gbc.h>
 
-#include <glad/glad.h>
-
 #include "windowing/glfw_init.h"
 #include <GLFW/glfw3.h>
 
@@ -35,11 +33,22 @@ namespace app
     Application::Application()
     {
         gbc::initialize();
+        Glfw::initialize();
 
-        GLFWwindow* window = Glfw::initialize();
-        ImGuiLayer::initialize(window);
+        m_window = create_scope<Window>("GBC Emulator - By Jun Lim", 1080, 720, true);
+        ImGuiLayer::initialize(m_window->m_handle);
 
         m_gbc = create_scope<GBC>("roms/test.gb");
+
+        m_window->m_input.m_on_key_pressed.add_event_listener([&](i32 key) -> bool {
+            if (key == GLFW_KEY_SPACE)
+            {
+                m_gbc->step();
+                m_step_count++;
+                return true;
+            }
+            return false;
+        });
     }
 
     Application::~Application()
@@ -53,9 +62,9 @@ namespace app
         static DisassemblyWindow disassembly_window;
         u32 cnt = 500;
         // Game loop
-        while (!glfwWindowShouldClose(Glfw::s_window))
+        while (!glfwWindowShouldClose(m_window->m_handle))
         {
-            Glfw::begin();
+            Glfw::poll_events();
             ImGuiLayer::begin();
             ImGui::DockSpaceOverViewport();
 
@@ -70,7 +79,10 @@ namespace app
             }
 
             if (!m_paused)
+            {
                 m_gbc->step();
+                m_step_count++;
+            }
 
             // Clear the colorbuffer
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -79,7 +91,7 @@ namespace app
             ImGui::ShowDemoWindow();
 
             ImGuiLayer::end();
-            Glfw::end();
+            m_window->swap_buffers();
         }
     }
 
