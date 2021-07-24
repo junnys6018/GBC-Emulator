@@ -381,7 +381,7 @@ namespace gbc
     // opcode: 0xF8
     i32 CPU::ld_hl_sp_n()
     {
-        i8 offset = std::bit_cast<i8>(m_bus->cpu_read_byte(PC++));
+        i8 offset = gbc::bit_cast<i8>(m_bus->cpu_read_byte(PC++));
         i32 result = SP + offset;
 
         // Flags
@@ -436,7 +436,7 @@ namespace gbc
     // opcode: 0xE8
     i32 CPU::add_sp_imm_8()
     {
-        i8 offset = std::bit_cast<i8>(m_bus->cpu_read_byte(PC++));
+        i8 offset = gbc::bit_cast<i8>(m_bus->cpu_read_byte(PC++));
         i32 result = SP + offset;
 
         // Flags
@@ -628,7 +628,7 @@ namespace gbc
     template <i32 F>
     i32 CPU::jr()
     {
-        i8 offset = std::bit_cast<i8>(m_bus->cpu_read_byte(PC++));
+        i8 offset = gbc::bit_cast<i8>(m_bus->cpu_read_byte(PC++));
         if (get_flag<F>())
         {
             PC += offset;

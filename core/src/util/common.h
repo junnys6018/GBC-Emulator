@@ -51,4 +51,24 @@ namespace gbc
     inline u8 lsb(u16 data) { return data & 0x00FF; }
 
     std::vector<u8> read_file(const std::string& filename);
+
+#ifdef GBC_HAS_CXX_20
+    template <class To, class From>
+    constexpr To bit_cast(const From& val) noexcept
+    {
+        static_assert((sizeof(To) == sizeof(From)) && std::is_trivially_copyable_v<To> && std::is_trivially_copyable_v<From>);
+        return std::bit_cast<To>(val);
+    }
+#else
+    template <class To, class From>
+    constexpr To bit_cast(const From& val) noexcept
+    {
+        // We additionally require the destination type to be trivially constructable
+        static_assert((sizeof(To) == sizeof(From)) && std::is_trivially_copyable_v<To> && std::is_trivially_copyable_v<From> &&
+                      std::std::is_trivially_constructible_v<To>);
+        To dst;
+        std::memcpy(&dst, &val, sizeof(To));
+        return dst;
+    }
+#endif
 }

@@ -3,9 +3,17 @@ project(GBC-Emulator)
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release") 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# ---------- specify the C++ standard ----------
+# ---------- configuration options ----------
 
-set(CMAKE_CXX_STANDARD 20)
+option(GBC_USE_CXX_20 "Compile with c++ 20" ON)
+
+# ---------- specify the C++ standard ----------
+if (GBC_USE_CXX_20)
+    set(CMAKE_CXX_STANDARD 20)
+    add_compile_definitions(GBC_HAS_CXX_20)
+else ()
+    set(CMAKE_CXX_STANDARD 17)
+endif()
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # ---------- Global Configuration Settings ----------

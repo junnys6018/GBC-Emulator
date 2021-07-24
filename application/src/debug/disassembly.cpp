@@ -119,10 +119,10 @@ namespace app
         addr |= (static_cast<u16>(gbc.peek_byte(pc++)) << 8);
         return addr;
     }
-    static inline char sign(u8 value) { return (std::bit_cast<i8>(value) < 0) ? '-' : '+'; }
+    static inline char sign(u8 value) { return (gbc::bit_cast<i8>(value) < 0) ? '-' : '+'; }
     static inline u8 mag(u8 value)
     {
-        i8 signed_val = std::bit_cast<i8>(value);
+        i8 signed_val = gbc::bit_cast<i8>(value);
         return (signed_val < 0) ? -signed_val : signed_val;
     }
 
@@ -327,7 +327,7 @@ namespace app
                 if (z == 1)
                 {
                     ASSERT(q == 0);
-                    std::sprintf(line.data(), "$%.4X: %.2X       pop %s", base, opcode, rp2[y]);
+                    std::sprintf(line.data(), "$%.4X: %.2X       pop %s", base, opcode, rp2[p]);
                     return 1;
                 }
                 if (z == 2)
