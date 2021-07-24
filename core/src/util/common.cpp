@@ -3,7 +3,12 @@
 #include <fstream>
 namespace gbc
 {
-    void initialize() { Log::initialize(); }
+    bool s_silent = false;
+    void initialize(spdlog::level::level_enum log_level, bool silent)
+    {
+        Log::initialize(log_level);
+        s_silent = silent;
+    }
 
     std::vector<u8> read_file(const std::string& filename)
     {

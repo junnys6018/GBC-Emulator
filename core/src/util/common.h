@@ -1,6 +1,9 @@
 #pragma once
 #include "util/assert.h"
-
+// This ignores all warnings raised inside External headers
+#pragma warning(push, 0)
+#include <spdlog/spdlog.h>
+#pragma warning(pop)
 namespace gbc
 {
     using i8 = int8_t;
@@ -20,7 +23,9 @@ namespace gbc
 #error Unknown configuration
 #endif
 
-    void initialize();
+    extern bool s_silent;
+
+    void initialize(spdlog::level::level_enum log_level = spdlog::level::trace, bool silent = false);
 
     template <typename T>
     using Scope = std::unique_ptr<T>;

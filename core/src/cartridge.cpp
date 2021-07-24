@@ -11,10 +11,7 @@ namespace gbc
     {
         initialize();
     }
-    Cartridge::Cartridge(std::vector<u8>&& rom, const HeaderInfo& header_info) : m_rom(rom), m_header_info(header_info)
-    {
-        initialize();
-    }
+    Cartridge::Cartridge(std::vector<u8>&& rom, const HeaderInfo& header_info) : m_rom(rom), m_header_info(header_info) { initialize(); }
 
     void Cartridge::initialize() {}
 
@@ -137,22 +134,22 @@ namespace gbc
         }
     }
 
-#define FROM_ROM_IMPL(fn)                                                                                                        \
-    HeaderInfo hi = parse_header(rom);                                                                                           \
-                                                                                                                                 \
-    std::string message;                                                                                                         \
-    if (!verify_header(hi, message))                                                                                             \
-    {                                                                                                                            \
-        LOG_ERROR("Failed to load rom: {}", message);                                                                            \
-        return nullptr;                                                                                                          \
-    }                                                                                                                            \
-                                                                                                                                 \
-    log_header_info(hi);                                                                                                         \
-    switch (hi.mbc_type)                                                                                                         \
-    {                                                                                                                            \
-    case 0x00: /* ROM only*/ return create_scope<ROM>(fn(rom), hi);                                                              \
-    case 0x01: /* MBC1 */ return create_scope<MBC1>(fn(rom), hi);                                                                \
-    default: /* Capture unimplemented mbc's */ LOG_ERROR("Not yet implemented mbc: {}", get_cartridge_type(hi.mbc_type));        \
+#define FROM_ROM_IMPL(fn)                                                                                                                  \
+    HeaderInfo hi = parse_header(rom);                                                                                                     \
+                                                                                                                                           \
+    std::string message;                                                                                                                   \
+    if (!verify_header(hi, message))                                                                                                       \
+    {                                                                                                                                      \
+        LOG_ERROR("Failed to load rom: {}", message);                                                                                      \
+        return nullptr;                                                                                                                    \
+    }                                                                                                                                      \
+    if (!s_silent)                                                                                                                         \
+        log_header_info(hi);                                                                                                               \
+    switch (hi.mbc_type)                                                                                                                   \
+    {                                                                                                                                      \
+    case 0x00: /* ROM only*/ return create_scope<ROM>(fn(rom), hi);                                                                        \
+    case 0x01: /* MBC1 */ return create_scope<MBC1>(fn(rom), hi);                                                                          \
+    default: /* Capture unimplemented mbc's */ LOG_ERROR("Not yet implemented mbc: {}", get_cartridge_type(hi.mbc_type)); return nullptr;  \
     }
 
     Scope<Cartridge> Cartridge::from_rom(const std::vector<u8>& rom) { FROM_ROM_IMPL(); }
@@ -184,9 +181,8 @@ namespace gbc
     bool verify_header(const HeaderInfo& hi, std::string& message)
     {
         // TODO
-        static std::set<u8> allowed_cartridge_types = {0x00, 0x01, 0x02, 0x03, 0x05, 0x06, 0x08, 0x09, 0x0B, 0x0C,
-                                                       0x0D, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x19, 0x1A, 0x1B, 0x1C,
-                                                       0x1D, 0x1E, 0x20, 0x22, 0xFC, 0xFD, 0xFE, 0xFF};
+        static std::set<u8> allowed_cartridge_types = {0x00, 0x01, 0x02, 0x03, 0x05, 0x06, 0x08, 0x09, 0x0B, 0x0C, 0x0D, 0x0F, 0x10, 0x11,
+                                                       0x12, 0x13, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x20, 0x22, 0xFC, 0xFD, 0xFE, 0xFF};
         static std::set<u8> allowed_ram_sizes = {0, 2, 3, 4, 5};
 
         if (allowed_cartridge_types.find(hi.mbc_type) == allowed_cartridge_types.end())
@@ -238,5 +234,7 @@ namespace gbc
         case 4: return 16 * 8192;
         case 5: return 8 * 8192;
         }
+        ASSERT(false); // Unreachable code
+        return 0;
     }
 }

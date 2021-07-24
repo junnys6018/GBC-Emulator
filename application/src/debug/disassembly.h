@@ -17,7 +17,7 @@ namespace app
         using Line = std::array<char, 64>;
 
         // Settings
-        u32 m_num_lines = 16;
+        u32 m_num_lines = 64;
         u32 m_offset = 8;
 
         std::vector<u16> m_base_addrs;

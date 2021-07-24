@@ -17,9 +17,14 @@ namespace app
 
     void DisassemblyWindow::fill_lines(const GBC& gbc, u16 pc)
     {
-        auto it = std::find(m_base_addrs.begin(), m_base_addrs.end(), pc);
-        i32 index = (it - m_base_addrs.begin());
-        if (it == m_base_addrs.end() || is_empty(m_lines[index]))
+
+        auto it = m_base_addrs.begin();
+        for (i32 i = 0; it != m_base_addrs.end(); it++, i++)
+        {
+            if (*it == pc && !is_empty(m_lines[i]))
+                break;
+        }
+        if (it == m_base_addrs.end())
         {
             for (i32 i = 0; i < m_offset; i++)
             {
@@ -105,7 +110,7 @@ namespace app
 
     static const char* r[8] = {"B", "C", "D", "E", "H", "L", "(HL)", "A"};
     static const char* rp[4] = {"BC", "DE", "HL", "SP"};
-    static const char* rp2[4] = {"BC", "DE", "HL", "SP"};
+    static const char* rp2[4] = {"BC", "DE", "HL", "AF"};
     static const char* cc[4] = {"NZ", "Z", "NC", "C"};
     static const char* alu[8] = {"add A,", "adc A,", "sub", "sbc A,", "and", "xor", "or", "cp"};
     static const char* rot[8] = {"rlc", "rrc", "rl", "rr", "sla", "sra", "swap", "srl"};

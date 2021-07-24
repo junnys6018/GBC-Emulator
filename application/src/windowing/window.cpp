@@ -32,5 +32,11 @@ namespace app
     }
     Window::~Window() { WindowManager::remove(this); }
 
+    std::pair<u32, u32> Window::get_size()
+    {
+        i32 w, h;
+        glfwGetWindowSize(m_handle, &w, &h);
+        return {w, h};
+    }
     void Window::swap_buffers() { glfwSwapBuffers(m_handle); }
 }

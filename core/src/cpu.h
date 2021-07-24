@@ -18,6 +18,7 @@ namespace gbc
             low = value & 0x00FF;
             high = (value & 0xFF00) >> 8;
         }
+        Register(u16 val) : low(lsb(val)), high(msb(val)) {}
     };
 
     struct CPUData
@@ -38,21 +39,27 @@ namespace gbc
         void run_until(u64 clock);
         CPUData get_cpu_data() const;
         inline u16 get_pc() const { return PC; }
+        inline u16 get_sp() const { return SP; }
 
     private:
         struct
         {
-            u8 unused : 4;
-            u8 z : 1; // zero flag
-            u8 n : 1; // subtraction flag
-            u8 h : 1; // half carry flag
-            u8 c : 1; // carry flag
-            u8 acc;   // accumulator
+            u8 unused : 4 = 0;
+            u8 c : 1 = 1; // carry flag
+            u8 h : 1 = 1; // half carry flag
+            u8 n : 1 = 0; // subtraction flag
+            u8 z : 1 = 1; // zero flag
+            u8 acc = 1;   // accumulator
             inline void set(u16 data) { std::memcpy(this, &data, sizeof(u16)); }
-            inline u16 get() const { return std::bit_cast<u16>(*this); }
+            inline u16 get() const { return gbc::bit_cast<u16>(*this); }
+            inline u8 flags()
+            {
+                u16 data = get();
+                return data & 0x00FF;
+            }
         } AF;
-        Register BC, DE, HL;
-        u16 SP, PC = 0x100;
+        Register BC = 0x0013, DE = 0x00D8, HL = 0x014D;
+        u16 SP = 0xFFFE, PC = 0x100;
         bool IME = false;
         bool IME_scheduled = false;
         u64 m_total_machine_cycles = 0;
@@ -88,7 +95,7 @@ namespace gbc
 
         // Opcodes
         i32 nop();
-        template <i32 Ri, i32 Ro>
+        template <i32 Ro, i32 Ri>
         i32 ld();
         i32 ld_sp_hl();
         template <i32 R>

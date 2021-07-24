@@ -2,22 +2,22 @@
 
 #include "util/log.h"
 
-#define SET_REG_16()                                                                                                             \
-    static_assert(R < 4);                                                                                                        \
-    if constexpr (R == 0)                                                                                                        \
-        BC.set(data);                                                                                                            \
-    if constexpr (R == 1)                                                                                                        \
-        DE.set(data);                                                                                                            \
-    if constexpr (R == 2)                                                                                                        \
+#define SET_REG_16()                                                                                                                       \
+    static_assert(R < 4);                                                                                                                  \
+    if constexpr (R == 0)                                                                                                                  \
+        BC.set(data);                                                                                                                      \
+    if constexpr (R == 1)                                                                                                                  \
+        DE.set(data);                                                                                                                      \
+    if constexpr (R == 2)                                                                                                                  \
     HL.set(data)
 
-#define GET_REG_16()                                                                                                             \
-    static_assert(R < 4);                                                                                                        \
-    if constexpr (R == 0)                                                                                                        \
-        return BC.get();                                                                                                         \
-    if constexpr (R == 1)                                                                                                        \
-        return DE.get();                                                                                                         \
-    if constexpr (R == 2)                                                                                                        \
+#define GET_REG_16()                                                                                                                       \
+    static_assert(R < 4);                                                                                                                  \
+    if constexpr (R == 0)                                                                                                                  \
+        return BC.get();                                                                                                                   \
+    if constexpr (R == 1)                                                                                                                  \
+        return DE.get();                                                                                                                   \
+    if constexpr (R == 2)                                                                                                                  \
     return HL.get()
 
 namespace gbc
@@ -215,7 +215,7 @@ namespace gbc
     i32 CPU::nop() { return 1; }
 
     // opcode: 0b01yyyzzz
-    template <i32 Ri, i32 Ro>
+    template <i32 Ro, i32 Ri>
     i32 CPU::ld()
     {
         u8 data = get_register<Ri>();
@@ -400,6 +400,7 @@ namespace gbc
     template <i32 R>
     i32 CPU::add()
     {
+        u8 acc = AF.acc;
         u16 data = get_register<R>();
         u16 result = static_cast<u16>(AF.acc) + data;
 
@@ -409,7 +410,7 @@ namespace gbc
         // Flags
         AF.z = (AF.acc == 0);
         AF.n = 0;
-        AF.h = ((((data & 0x0F) + (AF.acc & 0x0F)) & 0x10) == 0x10);
+        AF.h = ((((data & 0x0F) + (acc & 0x0F)) & 0x10) == 0x10);
         AF.c = (result > 0xFF);
 
         return ind_or_imm(R, 2, 1);
@@ -454,6 +455,7 @@ namespace gbc
     template <i32 R>
     i32 CPU::adc()
     {
+        u8 acc = AF.acc;
         u16 data = get_register<R>();
         u16 result = static_cast<u16>(AF.acc) + data + AF.c;
 
@@ -463,7 +465,7 @@ namespace gbc
         // Flags
         AF.z = (AF.acc == 0);
         AF.n = 0;
-        AF.h = ((((data & 0x0F) + (AF.acc & 0x0F) + AF.c) & 0x10) == 0x10);
+        AF.h = ((((data & 0x0F) + (acc & 0x0F) + AF.c) & 0x10) == 0x10);
         AF.c = (result > 0xFF);
 
         return ind_or_imm(R, 2, 1);
@@ -475,17 +477,16 @@ namespace gbc
     i32 CPU::sub()
     {
         u8 data = get_register<R>();
-        u8 twos_complement = ~data + 1;
-        u16 result = static_cast<u16>(AF.acc) + twos_complement;
+        u8 acc = AF.acc;
 
         // Store result into acc
-        AF.acc = result & 0x00FF;
+        AF.acc = acc - data;
 
         // Flags
-        AF.z = (AF.acc == 0);
+        AF.z = (data == acc);
         AF.n = 1;
-        AF.h = !(((((data & 0x0F) ^ 0x0F) + 1 + (AF.acc & 0x0F)) & 0x10) == 0x10);
-        AF.c = !(result > 0xFF);
+        AF.h = ((acc & 0x0F) < (data & 0x0F));
+        AF.c = (acc < data);
 
         return ind_or_imm(R, 2, 1);
     }
@@ -495,18 +496,17 @@ namespace gbc
     template <i32 R>
     i32 CPU::sbc()
     {
-        u8 data = get_register<R>();
-        u8 twos_complement = ~(data + AF.c) + 1;
-        u16 result = static_cast<u16>(AF.acc) + twos_complement;
-
-        // Store result into acc
-        AF.acc = result & 0x00FF;
+        u16 data = get_register<R>();
+        u16 result = AF.acc - data - AF.c;
 
         // Flags
-        AF.z = (AF.acc == 0);
+        AF.z = ((result & 0xFF) == 0);
         AF.n = 1;
-        AF.h = !(((((data & 0x0F) ^ 0x0F) + 1 + (AF.acc & 0x0F)) & 0x10) == 0x10);
-        AF.c = !(result > 0xFF);
+        AF.h = ((AF.acc ^ data ^ result) & 0x10) != 0;
+        AF.c = ((result & ~0xFF) != 0);
+
+        // Store result into acc
+        AF.acc = result;
 
         return ind_or_imm(R, 2, 1);
     }
@@ -564,14 +564,14 @@ namespace gbc
     template <i32 R>
     i32 CPU::cp()
     {
-        u16 data = get_register<R>();
-        u16 result = static_cast<u16>(AF.acc) + (data ^ 0x00FF) + 1;
+        u8 data = get_register<R>();
+        u8 acc = AF.acc;
 
         // Flags
-        AF.z = (result & 0x00FF) == 0;
+        AF.z = (data == acc);
         AF.n = 1;
-        AF.h = !(((((data & 0x0F) ^ 0x0F) + 1 + (AF.acc & 0x0F)) & 0x10) == 0x10);
-        AF.c = !(result > 0xFF);
+        AF.h = ((acc & 0x0F) < (data & 0x0F));
+        AF.c = (acc < data);
 
         return ind_or_imm(R, 2, 1);
     }
@@ -584,7 +584,7 @@ namespace gbc
         write_register<R>(reg + 1);
 
         // Flags
-        AF.z = ((reg + 1) == 0);
+        AF.z = (reg == 0xFF);
         AF.n = 0;
         AF.h = (((reg & 0x0F) + 1) & 0x10) == 0x10;
 
@@ -599,9 +599,9 @@ namespace gbc
         write_register<R>(reg - 1);
 
         // Flags
-        AF.z = ((reg - 1) == 0);
+        AF.z = (reg == 1);
         AF.n = 1;
-        AF.h = (reg & 0x0F) == 0;
+        AF.h = ((reg & 0x0F) == 0);
 
         return ind_or_imm(R, 3, 1);
     }
@@ -695,16 +695,17 @@ namespace gbc
         }
         else
         {
-            if (msb(AF.acc) > 9 || AF.c)
+            if (AF.acc > 0x99 || AF.c)
             {
                 AF.acc += 0x60;
                 AF.c = 1;
             }
-            if (lsb(AF.acc) > 9 || AF.h)
+            if ((AF.acc & 0x0F) > 9 || AF.h)
                 AF.acc += 0x06;
         }
         AF.z = (AF.acc == 0);
         AF.h = 0;
+
         return 1;
     }
 
@@ -761,6 +762,8 @@ namespace gbc
     {
         u16 reg = pop_stack();
         reg |= (static_cast<u16>(pop_stack()) << 8);
+        if constexpr (R == 3) // Clear lower flag bits when poping to AF
+            reg &= 0xFFF0;
         write_register2_16<R>(reg);
         return 3;
     }
@@ -886,7 +889,7 @@ namespace gbc
         u8 reg = get_register<R>();
         u8 c = AF.c;
         AF.c = ((reg & 0x80) != 0);
-        reg = (AF.acc << 1) | c;
+        reg = (reg << 1) | c;
         write_register<R>(reg);
         AF.z = (reg == 0);
         AF.n = 0;
@@ -901,7 +904,7 @@ namespace gbc
         u8 reg = get_register<R>();
         u8 c = AF.c;
         AF.c = (reg & 0x01);
-        reg = (AF.acc >> 1) | (c << 7);
+        reg = (reg >> 1) | (c << 7);
         write_register<R>(reg);
         AF.z = (reg == 0);
         AF.n = 0;
@@ -956,7 +959,7 @@ namespace gbc
     {
         u8 reg = get_register<R>();
         AF.c = (reg & 0x01);
-        reg >>= 1;
+        reg = (reg >> 1);
         write_register<R>(reg);
         AF.z = (reg == 0);
         AF.n = 0;

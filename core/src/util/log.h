@@ -14,12 +14,11 @@ namespace gbc
     class Log
     {
     public:
-        static void initialize();
+        static void initialize(spdlog::level::level_enum log_level);
 
-        static Ref<spdlog::logger>& get_logger()
-        {
-            return s_logger;
-        }
+        static Ref<spdlog::logger>& get_logger() { return s_logger; }
+
+        static inline void flush() { s_logger->flush(); }
 
     private:
         static Ref<spdlog::logger> s_logger;

@@ -32,6 +32,8 @@ namespace gbc
                 return 0xFF;
             }
         }
+        ASSERT(false); // Unreachable code
+        return 0;
     }
     u8 ROM::peek_cartridge(u16 addr) const { return const_cast<ROM*>(this)->read_cartridge(addr); }
 }

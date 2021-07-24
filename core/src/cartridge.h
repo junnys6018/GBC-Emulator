@@ -34,6 +34,7 @@ namespace gbc
         virtual u8 peek_cartridge(u16 addr) const = 0;
         static Scope<Cartridge> from_rom(const std::vector<u8>& rom);
         static Scope<Cartridge> from_rom(std::vector<u8>&& rom);
+        inline const u8* get_rom() const { return m_rom.data(); }
 
     protected:
         Cartridge(const std::vector<u8>& rom, const HeaderInfo& header_info);

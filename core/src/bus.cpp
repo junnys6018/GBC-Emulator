@@ -1,9 +1,14 @@
 #include "bus.h"
 #include "util/log.h"
-
+#define LOG_WARN(...) (void)0
 namespace gbc
 {
-    Bus::Bus(Cartridge* cartridge) : m_cartridge(cartridge) {}
+    Bus::Bus(Cartridge* cartridge) : m_cartridge(cartridge)
+    {
+        m_vram.fill(0);
+        m_wram.fill(0);
+        m_hram.fill(0);
+    }
 
     u8 Bus::cpu_read_byte(u16 addr)
     {
@@ -28,7 +33,6 @@ namespace gbc
         else if (addr >= 0xD000 && addr < 0xE000)
         {
             // todo: Bank switch, currently fixed to first bank
-            LOG_WARN("read to unimplemented address: {0:x}", addr);
             addr &= 0x0FFF;
             return m_wram[addr | 0x1000];
         }
@@ -41,26 +45,29 @@ namespace gbc
         else if (addr >= 0xFE00 && addr < 0xFEA0)
         {
             // TODO: OAM
-            LOG_WARN("read to unimplemented address: {0:x}", addr);
+            LOG_WARN("read to unimplemented address (OAM): {0:x}", addr);
+            return 0;
         }
         else if (addr >= 0xFEA0 && addr < 0xFF00)
         {
-            LOG_INFO("Attempt to read unusable address {0:x}", addr);
+            LOG_TRACE("Attempt to read unusable address {0:x}", addr);
             return 0;
         }
         else if (addr >= 0xFF00 && addr < 0xFF80)
         {
             // TODO: IO registers
-            LOG_WARN("read to unimplemented address: {0:x}", addr);
+            LOG_WARN("read to unimplemented address (IO Registers): {0:x}", addr);
+            return 0;
         }
-        else if (addr >= 0xFF80 && addr < 0xFFFF)
+        else if (addr >= 0xFF80 && addr < 0xFFFF) // high ram
         {
-            // high ram
-            LOG_WARN("read to unimplemented address: {0:x}", addr);
+            addr &= 0x007F;
+            return m_hram[addr];
         }
         else // addr = 0xFFFF
         {
-            LOG_WARN("read to unimplemented address: {0:x}", addr);
+            LOG_WARN("read to unimplemented address (IE Register): {0:x}", addr);
+            return 0;
         }
     }
 
@@ -87,7 +94,6 @@ namespace gbc
         else if (addr >= 0xD000 && addr < 0xE000)
         {
             // todo: Bank switch, currently fixed to first bank
-            LOG_WARN("read to unimplemented address: {0:x}", addr);
             addr &= 0x0FFF;
             m_wram[addr | 0x1000] = byte;
         }
@@ -100,25 +106,25 @@ namespace gbc
         else if (addr >= 0xFE00 && addr < 0xFEA0)
         {
             // TODO: OAM
-            LOG_WARN("write to unimplemented address: {0:x}", addr);
+            LOG_WARN("write to unimplemented address (OAM): {0:x}", addr);
         }
         else if (addr >= 0xFEA0 && addr < 0xFF00)
         {
-            LOG_INFO("Attempt to write unusable address {0:x}", addr);
+            LOG_TRACE("Attempt to write unusable address {0:x}", addr);
         }
         else if (addr >= 0xFF00 && addr < 0xFF80)
         {
             // TODO: IO registers
-            LOG_WARN("write to unimplemented address: {0:x}", addr);
+            LOG_WARN("write to unimplemented address (IO Registers): {0:x}", addr);
         }
-        else if (addr >= 0xFF80 && addr < 0xFFFF)
+        else if (addr >= 0xFF80 && addr < 0xFFFF) // high ram
         {
-            // high ram
-            LOG_WARN("write to unimplemented address: {0:x}", addr);
+            addr &= 0x007F;
+            m_hram[addr] = byte;
         }
         else // addr = 0xFFFF
         {
-            LOG_WARN("write to unimplemented address: {0:x}", addr);
+            LOG_WARN("write to unimplemented address (IE Register): {0:x}", addr);
         }
     }
     u8 Bus::peek_byte(u16 addr) const
@@ -144,7 +150,6 @@ namespace gbc
         else if (addr >= 0xD000 && addr < 0xE000)
         {
             // todo: Bank switch, currently fixed to first bank
-            LOG_WARN("read to unimplemented address: {0:x}", addr);
             addr &= 0x0FFF;
             return m_wram[addr | 0x1000];
         }
@@ -156,27 +161,24 @@ namespace gbc
         }
         else if (addr >= 0xFE00 && addr < 0xFEA0)
         {
-            // TODO: OAM
-            LOG_WARN("read to unimplemented address: {0:x}", addr);
+            return 0;
         }
         else if (addr >= 0xFEA0 && addr < 0xFF00)
         {
-            LOG_INFO("Attempt to read unusable address {0:x}", addr);
             return 0;
         }
         else if (addr >= 0xFF00 && addr < 0xFF80)
         {
-            // TODO: IO registers
-            LOG_WARN("read to unimplemented address: {0:x}", addr);
+            return 0;
         }
-        else if (addr >= 0xFF80 && addr < 0xFFFF)
+        else if (addr >= 0xFF80 && addr < 0xFFFF) // high ram
         {
-            // high ram
-            LOG_WARN("read to unimplemented address: {0:x}", addr);
+            addr &= 0x007F;
+            return m_hram[addr];
         }
         else // addr = 0xFFFF
         {
-            LOG_WARN("read to unimplemented address: {0:x}", addr);
+            return 0;
         }
     }
 }

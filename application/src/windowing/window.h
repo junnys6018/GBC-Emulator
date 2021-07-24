@@ -13,6 +13,7 @@ namespace app
         Window& operator=(const Window&) = delete;
         ~Window();
 
+        std::pair<u32, u32> get_size();
         void swap_buffers();
 
     public:

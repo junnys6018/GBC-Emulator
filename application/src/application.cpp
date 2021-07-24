@@ -8,9 +8,9 @@
 #include "windowing/imgui_init.h"
 #include <imgui.h>
 
-#include <imgui_memory_editor.h>
-
 #include "debug/disassembly.h"
+#include "debug/memory.h"
+#include "debug/stack.h"
 
 namespace app
 {
@@ -35,11 +35,11 @@ namespace app
         gbc::initialize();
         Glfw::initialize();
 
-        m_window = create_scope<Window>("GBC Emulator - By Jun Lim", 1080, 720, true);
+        m_window = create_scope<Window>("GBC Emulator - By Jun Lim", 1550, 870, true);
         ImGuiLayer::initialize(m_window->m_handle);
 
-        m_gbc = create_scope<GBC>("roms/test.gb");
-
+        m_gbc = create_scope<GBC>("roms/04-op r,imm.gb");
+        
         m_window->m_input.m_on_key_pressed.add_event_listener([&](i32 key) -> bool {
             if (key == GLFW_KEY_SPACE)
             {
@@ -60,7 +60,10 @@ namespace app
     void Application::run()
     {
         static DisassemblyWindow disassembly_window;
-        u32 cnt = 500;
+        static MemoryWindow memory_window;
+        static StackWindow stack_window;
+        u32 cnt = 0;
+        i32 inc = cnt / 144;
         // Game loop
         while (!glfwWindowShouldClose(m_window->m_handle))
         {
@@ -71,11 +74,24 @@ namespace app
             // Rendering
             draw_cpu_window();
             disassembly_window.draw_window("Disassembly", *m_gbc, m_gbc->get_pc());
+            memory_window.draw_window("Memory", *m_gbc);
+            stack_window.draw_window("Stack", *m_gbc);
 
             if (m_step_count < cnt)
             {
-                m_gbc->step();
-                m_step_count++;
+                if (m_step_count + inc > cnt)
+                {
+                    i32 num = cnt - m_step_count;
+                    for (int i = 0; i < num; i++)
+                        m_gbc->step();
+                    m_step_count += num;
+                }
+                else
+                {
+                    for (int i = 0; i < inc; i++)
+                        m_gbc->step();
+                    m_step_count += inc;
+                }
             }
 
             if (!m_paused)
@@ -97,9 +113,21 @@ namespace app
 
     void Application::draw_cpu_window()
     {
+        static const char* flags[8] = {".", ".", ".", ".", "c", "h", "n", "z"};
+        static const ImVec4 green = {0, 1, 0, 1};
+        static const ImVec4 red = {1, 0, 0, 1};
+
         ImGui::Begin("CPU");
         CPUData d = m_gbc->get_cpu_data();
         ImGui::Text("AF: $%04X", d.AF);
+        ImGui::SameLine();
+        for (i32 i = 7; i >= 0; i--)
+        {
+            bool active = ((lsb(d.AF) & (1 << i)) > 0);
+            ImGui::TextColored(active ? green : red, flags[i]);
+            if (i != 0)
+                ImGui::SameLine(0, 0);
+        }
         ImGui::Text("BC: $%04X", d.BC);
         ImGui::Text("DE: $%04X", d.DE);
         ImGui::Text("HL: $%04X", d.HL);
@@ -115,7 +143,18 @@ namespace app
         ImGui::Text("Count: %i", m_step_count);
         ImGui::SameLine();
         ImGui::Checkbox("Pause", &m_paused);
+
+        static char addr_input_buf[64];
+        if (ImGui::InputText("goto", addr_input_buf, 64, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            sscanf(addr_input_buf, "%X", &m_wait_addr);
+            u16 addr = static_cast<u16>(m_wait_addr);
+            while (m_gbc->get_pc() != addr)
+            {
+                m_step_count++;
+                m_gbc->step();
+            }
+        }
         ImGui::End();
     }
-    void Application::draw_disassembly() {}
 }
