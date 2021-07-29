@@ -70,7 +70,7 @@ namespace gbc
     {
         // We additionally require the destination type to be trivially constructable
         static_assert((sizeof(To) == sizeof(From)) && std::is_trivially_copyable_v<To> && std::is_trivially_copyable_v<From> &&
-                      std::std::is_trivially_constructible_v<To>);
+                      std::is_trivially_constructible_v<To>);
         To dst;
         std::memcpy(&dst, &val, sizeof(To));
         return dst;

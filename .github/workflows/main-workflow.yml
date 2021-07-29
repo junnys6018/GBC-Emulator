@@ -37,7 +37,7 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
-        
+
       - name: Download test artifact
         uses: actions/download-artifact@v2.0.9
         with:
@@ -49,4 +49,55 @@ jobs:
 
       - name: Run Tests
         run: .\tests.exe
+        working-directory: tests
+
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      
+      - name: Generate Project files
+        run: scripts/GenerateLinuxProjects.sh
+        
+      - name: Build
+        run: cmake --build build/${{matrix.configuration}}
+        
+      - name: Upload test artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux-${{matrix.configuration}}-tests
+          path: ./build/${{matrix.configuration}}/tests/tests
+
+  test-linux:
+    needs: build-linux
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+        
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Download test artifact
+        uses: actions/download-artifact@v2.0.9
+        with:
+          name: linux-${{matrix.configuration}}-tests
+          path: tests
+
+      - run: ls -laR tests
+
+      - name: Make test executable
+        run: chmod +x tests
+        working-directory: tests
+
+      - name: Run Tests
+        run: ./tests
         working-directory: tests

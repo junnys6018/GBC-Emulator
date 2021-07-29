@@ -188,7 +188,7 @@ namespace gbc
             return 1;
     }
 
-    consteval i32 ind_or_imm(i32 R, i32 ind_val, i32 other_val)
+    constexpr i32 ind_or_imm(i32 R, i32 ind_val, i32 other_val)
     {
         bool indirect_access = (R == 6 || R == 8);
         if (indirect_access)

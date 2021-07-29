@@ -156,17 +156,17 @@ namespace app
             u8 q = get_q(opcode);
 
             static std::set<u8> invalid_opcodes = {0xD3, 0xDB, 0xDD, 0xE3, 0xE4, 0xEB, 0xEC, 0xED, 0xF4, 0xFC, 0xFD};
-            if (invalid_opcodes.contains(opcode)) // Handle invalid opcode
+            if (invalid_opcodes.find(opcode) != invalid_opcodes.end()) // Handle invalid opcode
             {
                 // Print up to 3 bytes
                 u8 next1 = gbc.peek_byte(pc++);
                 u8 next2 = gbc.peek_byte(pc++);
-                if (!invalid_opcodes.contains(next1))
+                if (invalid_opcodes.find(next1) == invalid_opcodes.end())
                 {
                     std::sprintf(line.data(), "$%.4X: %.2X", base, opcode);
                     return 1;
                 }
-                else if (!invalid_opcodes.contains(next2))
+                else if (invalid_opcodes.find(next2) == invalid_opcodes.end())
                 {
                     std::sprintf(line.data(), "$%.4X: %.2X %.2X", base, opcode, next1);
                     return 2;
