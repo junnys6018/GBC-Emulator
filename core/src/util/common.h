@@ -57,6 +57,8 @@ namespace gbc
 
     std::vector<u8> read_file(const std::string& filename);
 
+    inline u32 bank(u32 bank, u32 bank_size) { return bank * bank_size; }
+
 #ifdef GBC_HAS_CXX_20
     template <class To, class From>
     constexpr To bit_cast(const From& val) noexcept

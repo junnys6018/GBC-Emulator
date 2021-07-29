@@ -8,6 +8,7 @@ namespace gbc
         m_vram.fill(0);
         m_wram.fill(0);
         m_hram.fill(0);
+        m_oam.fill(0);
     }
 
     u8 Bus::cpu_read_byte(u16 addr)
@@ -42,15 +43,15 @@ namespace gbc
             addr = (addr & 0x1FFF) | 0xC000;
             return cpu_read_byte(addr);
         }
-        else if (addr >= 0xFE00 && addr < 0xFEA0)
+        else if (addr >= 0xFE00 && addr < 0xFEA0) // oam
         {
-            // TODO: OAM
-            LOG_WARN("read to unimplemented address (OAM): {0:x}", addr);
-            return 0;
+            addr &= 0x9F;
+            return m_oam[addr];
         }
         else if (addr >= 0xFEA0 && addr < 0xFF00)
         {
-            LOG_TRACE("Attempt to read unusable address {0:x}", addr);
+            // Nintendo says use of this area is prohibited
+            LOG_TRACE("Attempt to read prohibited address {0:x}", addr);
             return 0;
         }
         else if (addr >= 0xFF00 && addr < 0xFF80)
@@ -103,14 +104,15 @@ namespace gbc
             addr = (addr & 0x1FFF) | 0xC000;
             return cpu_write_byte(addr, byte);
         }
-        else if (addr >= 0xFE00 && addr < 0xFEA0)
+        else if (addr >= 0xFE00 && addr < 0xFEA0) // oam
         {
-            // TODO: OAM
-            LOG_WARN("write to unimplemented address (OAM): {0:x}", addr);
+            addr &= 0x9F;
+            m_oam[addr] = byte;
         }
         else if (addr >= 0xFEA0 && addr < 0xFF00)
         {
-            LOG_TRACE("Attempt to write unusable address {0:x}", addr);
+            // Nintendo says use of this area is prohibited
+            LOG_TRACE("Attempt to write to prohibited address {0:x}", addr);
         }
         else if (addr >= 0xFF00 && addr < 0xFF80)
         {
@@ -159,9 +161,10 @@ namespace gbc
             addr = (addr & 0x1FFF) | 0xC000;
             return peek_byte(addr);
         }
-        else if (addr >= 0xFE00 && addr < 0xFEA0)
+        else if (addr >= 0xFE00 && addr < 0xFEA0) // oam
         {
-            return 0;
+            addr &= 0x9F;
+            return m_oam[addr];
         }
         else if (addr >= 0xFEA0 && addr < 0xFF00)
         {

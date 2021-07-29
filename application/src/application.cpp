@@ -11,6 +11,9 @@
 #include "debug/disassembly.h"
 #include "debug/memory.h"
 #include "debug/stack.h"
+#include "debug/tiledata.h"
+
+#include "opengl/debug.h"
 
 namespace app
 {
@@ -38,8 +41,9 @@ namespace app
         m_window = create_scope<Window>("GBC Emulator - By Jun Lim", 1550, 870, true);
         ImGuiLayer::initialize(m_window->m_handle);
 
-        m_gbc = create_scope<GBC>("roms/04-op r,imm.gb");
-        
+        m_gbc = create_scope<GBC>("roms/01-special.gb");
+        //m_gbc = create_scope<GBC>("roms/Tetris.gb");
+
         m_window->m_input.m_on_key_pressed.add_event_listener([&](i32 key) -> bool {
             if (key == GLFW_KEY_SPACE)
             {
@@ -62,6 +66,7 @@ namespace app
         static DisassemblyWindow disassembly_window;
         static MemoryWindow memory_window;
         static StackWindow stack_window;
+        static TiledataWindow tiledata_window;
         u32 cnt = 0;
         i32 inc = cnt / 144;
         // Game loop
@@ -76,6 +81,7 @@ namespace app
             disassembly_window.draw_window("Disassembly", *m_gbc, m_gbc->get_pc());
             memory_window.draw_window("Memory", *m_gbc);
             stack_window.draw_window("Stack", *m_gbc);
+            tiledata_window.draw_window("Tiledata", *m_gbc);
 
             if (m_step_count < cnt)
             {
@@ -96,8 +102,11 @@ namespace app
 
             if (!m_paused)
             {
-                m_gbc->step();
-                m_step_count++;
+                for (int i = 0; i < 30000; i++)
+                {
+                    m_gbc->step();
+                    m_step_count++;
+                }
             }
 
             // Clear the colorbuffer

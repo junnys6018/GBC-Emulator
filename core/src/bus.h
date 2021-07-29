@@ -20,5 +20,6 @@ namespace gbc
         std::array<u8, 8192> m_vram;
         std::array<u8, 32768> m_wram;
         std::array<u8, 127> m_hram;
+        std::array<u8, 160> m_oam;
     };
 }

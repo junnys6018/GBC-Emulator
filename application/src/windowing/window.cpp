@@ -4,6 +4,8 @@
 #include "windowing/window.h"
 #include "windowing/window_manager.h"
 
+#include "opengl/debug.h"
+
 namespace app
 {
     Window::Window(const char* title, u32 w, u32 h, bool resizable)
@@ -18,11 +20,13 @@ namespace app
         glfwMakeContextCurrent(m_handle); // this is bad
         glfwSwapInterval(1);
 
-        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) // TODO: THIS SHOULD NOT BE HERE
         {
             LOG_ERROR("Failed to initialize OpenGL context");
             exit(EXIT_FAILURE);
         }
+
+        enable_gl_debugging();
 
         // Define the viewport dimensions
         glViewport(0, 0, w, h);
