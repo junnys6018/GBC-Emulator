@@ -4,6 +4,11 @@
 #pragma warning(push, 0)
 #include <spdlog/spdlog.h>
 #pragma warning(pop)
+
+#if defined(GBC_COMPILE_TESTS)
+class GBCTests;
+#endif
+
 namespace gbc
 {
     using i8 = int8_t;

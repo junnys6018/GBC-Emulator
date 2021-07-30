@@ -38,7 +38,7 @@
     work by testing each instruction one at a time, for each instruction different inputs are tested
     and the registers after executing each instruction are checksummed. The final checksum is then
     compared with the expected value, the program then branches based off the result of the comparison
-    we simply need to check if the program ever takes the failed branch, at which point we 
+    we simply need to check if the program ever takes the failed branch, at which point we
     report of the opcode of the instruction that failed. The opcode of the currently executing instruction
     is always storted at 0xDEF8
 
@@ -95,22 +95,22 @@ std::string get_filename(const std::string& path)
 bool test_rom(const char* test)
 {
     auto filename = get_filename(test);
-    GBC gbc(test);
+    Scope<GBC> gbc = create_scope<GBC>(test);
     u16 passed_routine = PASSED_ROUTINE_ADDR;
     u16 failed_routine = FAILED_INSTR_CHECK;
     u32 steps = 0;
 
-    while (gbc.get_pc() != failed_routine && gbc.get_pc() != passed_routine)
+    while (gbc->get_pc() != failed_routine && gbc->get_pc() != passed_routine)
     {
-        gbc.step();
+        gbc->step();
         steps++;
     }
 
-    if (gbc.get_pc() == failed_routine)
+    if (gbc->get_pc() == failed_routine)
     {
-        u8 opcode1 = gbc.peek_byte(INSTR_ADDR);
-        u8 opcode2 = gbc.peek_byte(INSTR_ADDR + 1);
-        u8 opcode3 = gbc.peek_byte(INSTR_ADDR + 2);
+        u8 opcode1 = gbc->peek_byte(INSTR_ADDR);
+        u8 opcode2 = gbc->peek_byte(INSTR_ADDR + 1);
+        u8 opcode3 = gbc->peek_byte(INSTR_ADDR + 2);
 
         LOG_ERROR("Testing {}... Failed! steps: {} opcode: {:2X} {:2X} {:2X}\n", filename, steps, opcode1, opcode2, opcode3);
         return false;
@@ -125,26 +125,26 @@ bool test_rom(const char* test)
 bool test_special()
 {
     const char* filename = "01-special.gb";
-    GBC gbc("roms/blargg/01-special.gb");
+    Scope<GBC> gbc = create_scope<GBC>("roms/blargg/01-special.gb");
     u16 passed_routine = PASSED_ROUTINE_ADDR;
     u16 failed_routine = FAILED_ROUTINE_ADDR;
     u32 steps = 0;
-    while (gbc.get_pc() != failed_routine && gbc.get_pc() != passed_routine)
+    while (gbc->get_pc() != failed_routine && gbc->get_pc() != passed_routine)
     {
-        gbc.step();
+        gbc->step();
         steps++;
     }
-    if (gbc.get_pc() == failed_routine)
+    if (gbc->get_pc() == failed_routine)
     {
-        u16 test_name_addr = get_operand_16(failed_routine, gbc);
-        test_name_addr = get_u16(test_name_addr, gbc);
-        u16 result_addr = get_operand_16(failed_routine + RESULT_ADDR_OFFSET, gbc);
-        u8 result = gbc.peek_byte(result_addr);
+        u16 test_name_addr = get_operand_16(failed_routine, *gbc);
+        test_name_addr = get_u16(test_name_addr, *gbc);
+        u16 result_addr = get_operand_16(failed_routine + RESULT_ADDR_OFFSET, *gbc);
+        u8 result = gbc->peek_byte(result_addr);
 
         char test_name[64];
         memset(test_name, 0, sizeof(test_name));
         int i = 0;
-        while (u8 ch = gbc.peek_byte(test_name_addr++))
+        while (u8 ch = gbc->peek_byte(test_name_addr++))
         {
             test_name[i++] = gbc::bit_cast<char>(ch);
         }

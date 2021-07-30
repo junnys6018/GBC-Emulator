@@ -838,9 +838,9 @@ namespace gbc
         if (get_flag<F>())
         {
             PC = read_16(SP);
-            if constexpr (F == 5)
+            if constexpr (F == 4)
                 return 4;
-            if constexpr (F != 5)
+            if constexpr (F != 4)
                 return 5;
         }
         return 2;
@@ -1042,7 +1042,7 @@ namespace gbc
     i32 CPU::err()
     {
         LOG_ERROR("Invalid opcode");
-        return 1;
+        return 0;
     }
 
     // clang-format off

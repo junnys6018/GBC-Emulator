@@ -19,6 +19,7 @@ namespace gbc
         static Ref<spdlog::logger>& get_logger() { return s_logger; }
 
         static inline void flush() { s_logger->flush(); }
+        static inline void set_level(spdlog::level::level_enum log_level) { s_logger->set_level(log_level); }
 
     private:
         static Ref<spdlog::logger> s_logger;

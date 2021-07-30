@@ -43,7 +43,7 @@ namespace app
         m_window = create_scope<Window>("GBC Emulator - By Jun Lim", 1550, 870, true);
         ImGuiLayer::initialize(m_window->m_handle);
 
-        m_gbc = create_scope<GBC>("roms/02-interrupts.gb");
+        m_gbc = create_scope<GBC>("roms/instr_timing.gb");
         // m_gbc = create_scope<GBC>("roms/Tetris.gb");
 
         m_window->m_input.m_on_key_pressed.add_event_listener([&](i32 key) -> bool {

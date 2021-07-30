@@ -2,6 +2,7 @@
 #include "bus.h"
 #include "io_registers.h"
 #include "util/common.h"
+
 namespace gbc
 {
     // Returns number of m-cycles needed to complete the instruction
@@ -40,6 +41,10 @@ namespace gbc
         CPUData get_cpu_data() const;
         inline u16 get_pc() const { return PC; }
         inline u16 get_sp() const { return SP; }
+
+#if defined(GBC_COMPILE_TESTS)
+        friend class ::GBCTests;
+#endif
 
     private:
         struct

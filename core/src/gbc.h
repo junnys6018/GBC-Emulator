@@ -21,7 +21,9 @@ namespace gbc
         inline const u8* get_hram() const { return m_bus.get_hram(); }
         inline const u8* get_rom() const { return m_cartridge->get_rom(); }
         inline const IORegisters& get_io_reg() const { return m_bus.m_registers; }
-
+#if defined(GBC_COMPILE_TESTS)
+        friend class ::GBCTests;
+#endif
     private:
         Scope<Cartridge> m_cartridge;
         Bus m_bus;

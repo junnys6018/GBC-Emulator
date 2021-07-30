@@ -16,6 +16,7 @@ target_link_libraries(tests PUBLIC
     spdlog::spdlog
 )
 target_compile_definitions(tests PUBLIC SPDLOG_COMPILED_LIB)
+target_compile_definitions(tests PUBLIC GBC_COMPILE_TESTS)
 target_precompile_headers(tests REUSE_FROM core)
 
 # set working dir when debugging on visual studio
