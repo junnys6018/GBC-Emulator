@@ -1,6 +1,6 @@
+#include "gbc_access.h"
 #include <catch_amalgamated.hpp>
 #include <gbc.h>
-#include "gbc_access.h"
 using namespace gbc;
 // clang-format off
 u32 opcode_timings[] = {
@@ -47,7 +47,7 @@ bool GBCTests::test_instruction_timings()
     // These opcodes have variable execution times, we dont bother testing those
     static std::set<u32> branch_opcodes = {0x20, 0x28, 0x30, 0x38, 0xC0, 0xC2, 0xC4, 0xC8, 0xCA, 0xCC, 0xD0, 0xD2, 0xD4, 0xD8, 0xDA, 0xDC};
 
-    // supress logging 
+    // supress logging
     Log::set_level(spdlog::level::err);
 
     Scope<GBC> gbc = create_scope<GBC>("roms/blargg/01-special.gb"); // Load any rom, we dont care
@@ -82,7 +82,32 @@ bool GBCTests::test_instruction_timings()
     return true;
 }
 
+bool test_blargg_instr_timing()
+{
+    const char* filename = "instr_timing.gb";
+    Scope<GBC> gbc = create_scope<GBC>("roms/blargg/instr_timing.gb");
+    const u16 failed_routine = 0xC1B9, passed_routine = 0xC18B;
+    u32 steps = 0;
+
+    while (gbc->get_pc() != failed_routine && gbc->get_pc() != passed_routine)
+    {
+        gbc->step();
+        steps++;
+    }
+    if (gbc->get_pc() == failed_routine)
+    {
+        LOG_ERROR("Testing {}... Failed! steps={}\n", filename, steps);
+        return false;
+    }
+    else
+    {
+        LOG_INFO("Testing {}... Passed!", filename);
+        return true;
+    }
+}
+
 TEST_CASE("instruction_timings", "[cpu]")
 {
     CHECK(GBCTests::test_instruction_timings());
+    CHECK(test_blargg_instr_timing());
 }
