@@ -1,6 +1,7 @@
 #pragma once
 #include "util/common.h"
 #include "cartridge.h"
+#include "io_registers.h"
 
 namespace gbc
 {
@@ -15,8 +16,11 @@ namespace gbc
         inline const u8* get_wram() const { return m_wram.data(); }
         inline const u8* get_hram() const { return m_hram.data(); }
 
+        friend class GBC;
+        friend class CPU;
     private:
         Cartridge* m_cartridge;
+        IORegisters m_registers;
         std::array<u8, 8192> m_vram;
         std::array<u8, 32768> m_wram;
         std::array<u8, 127> m_hram;

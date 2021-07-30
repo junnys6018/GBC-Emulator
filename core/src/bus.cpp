@@ -1,6 +1,6 @@
 #include "bus.h"
 #include "util/log.h"
-#define LOG_WARN(...) (void)0
+
 namespace gbc
 {
     Bus::Bus(Cartridge* cartridge) : m_cartridge(cartridge)
@@ -54,11 +54,9 @@ namespace gbc
             LOG_TRACE("Attempt to read prohibited address {0:x}", addr);
             return 0;
         }
-        else if (addr >= 0xFF00 && addr < 0xFF80)
+        else if (addr >= 0xFF00 && addr < 0xFF80) // io registers
         {
-            // TODO: IO registers
-            LOG_WARN("read to unimplemented address (IO Registers): {0:x}", addr);
-            return 0;
+            return m_registers.cpu_read_byte(addr);
         }
         else if (addr >= 0xFF80 && addr < 0xFFFF) // high ram
         {
@@ -67,8 +65,7 @@ namespace gbc
         }
         else // addr = 0xFFFF
         {
-            LOG_WARN("read to unimplemented address (IE Register): {0:x}", addr);
-            return 0;
+            return m_registers.m_interrupt_enable;
         }
     }
 
@@ -114,10 +111,9 @@ namespace gbc
             // Nintendo says use of this area is prohibited
             LOG_TRACE("Attempt to write to prohibited address {0:x}", addr);
         }
-        else if (addr >= 0xFF00 && addr < 0xFF80)
+        else if (addr >= 0xFF00 && addr < 0xFF80) // io registers
         {
-            // TODO: IO registers
-            LOG_WARN("write to unimplemented address (IO Registers): {0:x}", addr);
+            m_registers.cpu_write_byte(addr, byte);
         }
         else if (addr >= 0xFF80 && addr < 0xFFFF) // high ram
         {
@@ -126,7 +122,7 @@ namespace gbc
         }
         else // addr = 0xFFFF
         {
-            LOG_WARN("write to unimplemented address (IE Register): {0:x}", addr);
+            m_registers.m_interrupt_enable = byte;
         }
     }
     u8 Bus::peek_byte(u16 addr) const
@@ -135,53 +131,16 @@ namespace gbc
         {
             return m_cartridge->peek_cartridge(addr);
         }
-        else if (addr >= 0x8000 && addr < 0xA000)
-        {
-            addr &= 0x1FFF;
-            return m_vram[addr];
-        }
         else if (addr >= 0xA000 && addr < 0xC000)
         {
             return m_cartridge->peek_cartridge(addr);
         }
-        else if (addr >= 0xC000 && addr < 0xD000)
-        {
-            addr &= 0x0FFF;
-            return m_wram[addr];
-        }
-        else if (addr >= 0xD000 && addr < 0xE000)
-        {
-            // todo: Bank switch, currently fixed to first bank
-            addr &= 0x0FFF;
-            return m_wram[addr | 0x1000];
-        }
-        else if (addr >= 0xE000 && addr < 0xFE00)
-        {
-            // Mirror of C000-DDFF
-            addr = (addr & 0x1FFF) | 0xC000;
-            return peek_byte(addr);
-        }
-        else if (addr >= 0xFE00 && addr < 0xFEA0) // oam
-        {
-            addr &= 0x9F;
-            return m_oam[addr];
-        }
-        else if (addr >= 0xFEA0 && addr < 0xFF00)
-        {
-            return 0;
-        }
         else if (addr >= 0xFF00 && addr < 0xFF80)
         {
-            return 0;
+            return m_registers.peek_byte(addr);
         }
-        else if (addr >= 0xFF80 && addr < 0xFFFF) // high ram
-        {
-            addr &= 0x007F;
-            return m_hram[addr];
-        }
-        else // addr = 0xFFFF
-        {
-            return 0;
-        }
+
+        // All other addresses are safe
+        return const_cast<Bus*>(this)->cpu_read_byte(addr);
     }
 }

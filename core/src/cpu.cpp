@@ -22,7 +22,7 @@
 
 namespace gbc
 {
-    CPU::CPU(Bus* bus) : m_bus(bus) {}
+    CPU::CPU(Bus* bus) : m_bus(bus), m_registers(&bus->m_registers) {}
 
     void CPU::clock()
     {
@@ -35,17 +35,24 @@ namespace gbc
 
         if (m_remaining_machine_cycles == 0)
         {
-            auto operation = get_next_instruction();
-            m_remaining_machine_cycles = (this->*operation)();
-            ASSERT(m_remaining_machine_cycles != 0);
+            if (check_for_interrupt())
+            {
+                m_remaining_machine_cycles = 5;
+            }
+            else
+            {
+                auto operation = get_next_instruction();
+                m_remaining_machine_cycles = (this->*operation)();
+                ASSERT(m_remaining_machine_cycles != 0);
+            }
         }
         m_remaining_machine_cycles--;
     }
 
-    void CPU::step()
+    u32 CPU::step()
     {
         // Add remaining cycles for the current instruction, if any
-        m_total_machine_cycles += m_remaining_machine_cycles;
+        u32 clocks = m_remaining_machine_cycles;
         m_remaining_machine_cycles = 0;
 
         if (IME_scheduled)
@@ -54,11 +61,47 @@ namespace gbc
             IME = true;
         }
 
-        auto operation = get_next_instruction();
-        m_total_machine_cycles += (this->*operation)();
+        if (check_for_interrupt())
+        {
+            clocks += 5;
+        }
+        else
+        {
+            auto operation = get_next_instruction();
+            clocks += (this->*operation)();
+        }
+
+        m_total_machine_cycles += clocks;
+        return clocks;
     }
 
     void CPU::run_until(u64 clock) {}
+
+    bool CPU::check_for_interrupt()
+    {
+        u8 interrupt_enable = m_registers->m_interrupt_enable;
+        u8 interrupt_flag = m_registers->m_interrupt_flag;
+
+        if (IME)
+        {
+            for (u8 i = 0; i <= 4; i++)
+            {
+                u8 mask = (1 << i);
+                if ((interrupt_enable & mask) && (interrupt_flag & mask))
+                {
+                    // Handle interrupt
+                    IME = false;
+                    m_registers->m_interrupt_flag &= ~mask;
+
+                    push_stack(msb(PC));
+                    push_stack(lsb(PC));
+                    PC = 0x0040 + 8 * i;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     Operation CPU::get_next_instruction()
     {

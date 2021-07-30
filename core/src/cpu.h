@@ -1,7 +1,7 @@
 #pragma once
 #include "bus.h"
+#include "io_registers.h"
 #include "util/common.h"
-
 namespace gbc
 {
     // Returns number of m-cycles needed to complete the instruction
@@ -35,7 +35,7 @@ namespace gbc
     public:
         CPU(Bus* bus);
         void clock();
-        void step();
+        u32 step();
         void run_until(u64 clock);
         CPUData get_cpu_data() const;
         inline u16 get_pc() const { return PC; }
@@ -66,11 +66,13 @@ namespace gbc
         u32 m_remaining_machine_cycles = 0;
 
         Bus* m_bus;
+        IORegisters* m_registers;
         static Operation s_opcodes[256];
         static Operation s_cb_opcodes[256];
 
     private:
         Operation get_next_instruction();
+        bool check_for_interrupt();
 
     private:
         // Helpers

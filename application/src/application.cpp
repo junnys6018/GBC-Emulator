@@ -12,6 +12,8 @@
 #include "debug/memory.h"
 #include "debug/stack.h"
 #include "debug/tiledata.h"
+#include "debug/tilemap.h"
+#include "debug/io_registers.h"
 
 #include "opengl/debug.h"
 
@@ -41,8 +43,8 @@ namespace app
         m_window = create_scope<Window>("GBC Emulator - By Jun Lim", 1550, 870, true);
         ImGuiLayer::initialize(m_window->m_handle);
 
-        m_gbc = create_scope<GBC>("roms/01-special.gb");
-        //m_gbc = create_scope<GBC>("roms/Tetris.gb");
+        m_gbc = create_scope<GBC>("roms/02-interrupts.gb");
+        // m_gbc = create_scope<GBC>("roms/Tetris.gb");
 
         m_window->m_input.m_on_key_pressed.add_event_listener([&](i32 key) -> bool {
             if (key == GLFW_KEY_SPACE)
@@ -67,6 +69,9 @@ namespace app
         static MemoryWindow memory_window;
         static StackWindow stack_window;
         static TiledataWindow tiledata_window;
+        static TilemapWindow tilemap_window;
+        static IORegistersWindow registers_window;
+
         u32 cnt = 0;
         i32 inc = cnt / 144;
         // Game loop
@@ -82,6 +87,8 @@ namespace app
             memory_window.draw_window("Memory", *m_gbc);
             stack_window.draw_window("Stack", *m_gbc);
             tiledata_window.draw_window("Tiledata", *m_gbc);
+            tilemap_window.draw_window("Tilemap", *m_gbc);
+            registers_window.draw_window("IO Registers", *m_gbc);
 
             if (m_step_count < cnt)
             {
@@ -128,6 +135,7 @@ namespace app
 
         ImGui::Begin("CPU");
         CPUData d = m_gbc->get_cpu_data();
+        ImGui::Text("IME: %i", d.IME);
         ImGui::Text("AF: $%04X", d.AF);
         ImGui::SameLine();
         for (i32 i = 7; i >= 0; i--)
