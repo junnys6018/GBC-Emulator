@@ -3,7 +3,7 @@
 namespace gbc
 {
     ROM::ROM(const std::vector<u8>& rom, const HeaderInfo& header_info) : Cartridge(rom, header_info) {}
-    ROM::ROM(std::vector<u8>&& rom, const HeaderInfo& header_info) : Cartridge(rom, header_info) {}
+    ROM::ROM(std::vector<u8>&& rom, const HeaderInfo& header_info) : Cartridge(std::move(rom), header_info) {}
 
     void ROM::write_cartridge(u16 addr, u8 data)
     {

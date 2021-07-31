@@ -11,7 +11,7 @@ namespace gbc
     {
         initialize();
     }
-    Cartridge::Cartridge(std::vector<u8>&& rom, const HeaderInfo& header_info) : m_rom(rom), m_header_info(header_info) { initialize(); }
+    Cartridge::Cartridge(std::vector<u8>&& rom, const HeaderInfo& header_info) : m_rom(std::move(rom)), m_header_info(header_info) { initialize(); }
 
     void Cartridge::initialize() {}
 

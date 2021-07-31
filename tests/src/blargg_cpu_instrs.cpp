@@ -1,7 +1,7 @@
 /*
     How these tests work:
 
-    01-special.gb
+    01-special.gb and 02-interrupts.gb
     Blarggs testing framework has 2 notable routines, test_passed and test_failed
     we step the emulation one instruction at a time and check if the program counter
     has reached the address of either routine. We then report the result of the test based
@@ -32,7 +32,7 @@
     they are the immedate data of the ld instruction, so we simply read a fixed offset
     from the test_failed routine to get these values.
 
-    All other tests work differently from 01-special.gb, we still check if a test has passed
+    All other tests work differently, we still check if a test has passed
     in the same way, however test_failed is only called once all the tests are completed,
     at which point it is very difficult to report which particular test has failed. These roms
     work by testing each instruction one at a time, for each instruction different inputs are tested
@@ -122,10 +122,9 @@ bool test_rom(const char* test)
     }
 }
 
-bool test_special()
+bool test_other(const std::string& rom)
 {
-    const char* filename = "01-special.gb";
-    Scope<GBC> gbc = create_scope<GBC>("roms/blargg/01-special.gb");
+    Scope<GBC> gbc = create_scope<GBC>("roms/blargg/" + rom);
     u16 passed_routine = PASSED_ROUTINE_ADDR;
     u16 failed_routine = FAILED_ROUTINE_ADDR;
     u32 steps = 0;
@@ -148,19 +147,20 @@ bool test_special()
         {
             test_name[i++] = gbc::bit_cast<char>(ch);
         }
-        LOG_ERROR("Testing {}... Failed! test_name: {} result: {} steps: {}\n", filename, test_name, result, steps);
+        LOG_ERROR("Testing {}... Failed! test_name: {} result: {} steps: {}\n", rom, test_name, result, steps);
         return false;
     }
     else
     {
-        LOG_INFO("Testing {}... Passed!", filename);
+        LOG_INFO("Testing {}... Passed!", rom);
         return true;
     }
 }
 
 TEST_CASE("Blargg cpu_instr tests", "[cpu][blargg]")
 {
-    CHECK(test_special());
+    CHECK(test_other("01-special.gb"));
+    CHECK(test_other("02-interrupts.gb"));
     for (int i = 0; i < NUM_TESTS; i++)
     {
         CHECK(test_rom(roms[i]));

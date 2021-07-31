@@ -45,6 +45,11 @@ namespace gbc
         const std::vector<u8> m_rom;
         std::vector<u8> m_ram;
 
+        // Returns the number of 16KB rom banks
+        inline u32 num_rom_banks() const { return m_rom.size() >> 14; }
+        // Returns the number of 8KB ram banks
+        inline u32 num_ram_banks() const { return m_ram.size() >> 13; }
+
     private:
         void initialize();
     };

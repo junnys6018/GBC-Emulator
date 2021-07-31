@@ -27,10 +27,10 @@ namespace gbc
     void CPU::clock()
     {
         m_total_machine_cycles++;
-        if (IME_scheduled)
+        if (m_IME_scheduled)
         {
-            IME_scheduled = false;
-            IME = true;
+            m_IME_scheduled = false;
+            m_IME = true;
         }
 
         if (m_remaining_machine_cycles == 0)
@@ -55,10 +55,10 @@ namespace gbc
         u32 clocks = m_remaining_machine_cycles;
         m_remaining_machine_cycles = 0;
 
-        if (IME_scheduled)
+        if (m_IME_scheduled)
         {
-            IME_scheduled = false;
-            IME = true;
+            m_IME_scheduled = false;
+            m_IME = true;
         }
 
         if (check_for_interrupt())
@@ -82,7 +82,7 @@ namespace gbc
         u8 interrupt_enable = m_registers->m_interrupt_enable;
         u8 interrupt_flag = m_registers->m_interrupt_flag;
 
-        if (IME)
+        if (m_IME)
         {
             for (u8 i = 0; i <= 4; i++)
             {
@@ -90,7 +90,7 @@ namespace gbc
                 if ((interrupt_enable & mask) && (interrupt_flag & mask))
                 {
                     // Handle interrupt
-                    IME = false;
+                    m_IME = false;
                     m_registers->m_interrupt_flag &= ~mask;
 
                     push_stack(msb(PC));
@@ -124,8 +124,8 @@ namespace gbc
         data.HL = HL.get();
         data.SP = SP;
         data.PC = PC;
-        data.IME = IME;
-        data.IME_scheduled = IME_scheduled;
+        data.IME = m_IME;
+        data.IME_scheduled = m_IME_scheduled;
         data.total_machine_cycles = m_total_machine_cycles;
         data.remaining_machine_cycles = m_remaining_machine_cycles;
         return data;
@@ -865,21 +865,21 @@ namespace gbc
     i32 CPU::reti()
     {
         PC = read_16(SP);
-        IME = true;
+        m_IME = true;
         return 4;
     }
 
     // opcode: 0xF3
     i32 CPU::di()
     {
-        IME = false;
+        m_IME = false;
         return 1;
     }
 
     // opcode: 0xFA
     i32 CPU::ei()
     {
-        IME_scheduled = true;
+        m_IME_scheduled = true;
         return 1;
     }
 
@@ -894,8 +894,12 @@ namespace gbc
     // opcode: 0x76
     i32 CPU::halt()
     {
-        // TODO
-        LOG_WARN("Unimplemented opcode halt() called");
+        LOG_TRACE("halted");
+        u8 IE = m_bus->m_registers.m_interrupt_enable;
+        u8 IF = m_bus->m_registers.m_interrupt_flag;
+        if (!(IE & IF & 0x1F)) // No pending interrupt
+            m_halted = true;
+
         return 1;
     }
 

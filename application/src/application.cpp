@@ -9,11 +9,11 @@
 #include <imgui.h>
 
 #include "debug/disassembly.h"
+#include "debug/io_registers.h"
 #include "debug/memory.h"
 #include "debug/stack.h"
 #include "debug/tiledata.h"
 #include "debug/tilemap.h"
-#include "debug/io_registers.h"
 
 #include "opengl/debug.h"
 
@@ -43,8 +43,7 @@ namespace app
         m_window = create_scope<Window>("GBC Emulator - By Jun Lim", 1550, 870, true);
         ImGuiLayer::initialize(m_window->m_handle);
 
-        m_gbc = create_scope<GBC>("roms/instr_timing.gb");
-        // m_gbc = create_scope<GBC>("roms/Tetris.gb");
+        m_gbc = create_scope<GBC>("roms/02-interrupts.gb");
 
         m_window->m_input.m_on_key_pressed.add_event_listener([&](i32 key) -> bool {
             if (key == GLFW_KEY_SPACE)
@@ -72,6 +71,7 @@ namespace app
         static TilemapWindow tilemap_window;
         static IORegistersWindow registers_window;
 
+        // u32 cnt = 1692350;
         u32 cnt = 0;
         i32 inc = cnt / 144;
         // Game loop
@@ -87,8 +87,8 @@ namespace app
             memory_window.draw_window("Memory", *m_gbc);
             stack_window.draw_window("Stack", *m_gbc);
             tiledata_window.draw_window("Tiledata", *m_gbc);
-            tilemap_window.draw_window("Tilemap", *m_gbc);
             registers_window.draw_window("IO Registers", *m_gbc);
+            tilemap_window.draw_window("Tilemap", *m_gbc);
 
             if (m_step_count < cnt)
             {
@@ -113,6 +113,12 @@ namespace app
                 {
                     m_gbc->step();
                     m_step_count++;
+                    u8 opcode = m_gbc->peek_byte(m_gbc->get_pc());
+                    if (opcode == 0x10) // stop
+                    {
+                        m_paused = true;
+                        break;
+                    }
                 }
             }
 
@@ -160,6 +166,7 @@ namespace app
         ImGui::Text("Count: %i", m_step_count);
         ImGui::SameLine();
         ImGui::Checkbox("Pause", &m_paused);
+        ImGui::Text("Next timer interrupt: %i t-cycles", m_gbc->next_timer_event());
 
         static char addr_input_buf[64];
         if (ImGui::InputText("goto", addr_input_buf, 64, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_EnterReturnsTrue))

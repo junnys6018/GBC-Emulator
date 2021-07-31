@@ -23,7 +23,7 @@ namespace app
         u16 sp = gbc.get_sp();
         u16 num_lines = min(m_lines, 0xFFFF - sp + 1);
         u16 base = sp + num_lines - 1;
-        for (u16 i = base; i >= sp; i--)
+        for (i32 i = base; i >= sp; i--)
         {
             u8 byte = gbc.peek_byte(i);
             ImGui::Text("$%.4X: %.2X", i, byte);

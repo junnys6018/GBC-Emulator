@@ -14,6 +14,7 @@ namespace gbc
             m_counter &= ~(0xFFFFFFFF << m_period_log2);
             return ret;
         }
+        inline u32 get_counter() const { return m_counter; }
 
     public:
         u32 m_period_log2;

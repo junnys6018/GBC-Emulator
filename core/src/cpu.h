@@ -45,6 +45,7 @@ namespace gbc
 #if defined(GBC_COMPILE_TESTS)
         friend class ::GBCTests;
 #endif
+        friend class GBC;
 
     private:
         struct
@@ -65,8 +66,9 @@ namespace gbc
         } AF;
         Register BC = 0x0013, DE = 0x00D8, HL = 0x014D;
         u16 SP = 0xFFFE, PC = 0x100;
-        bool IME = false;
-        bool IME_scheduled = false;
+        bool m_IME = false;
+        bool m_IME_scheduled = false;
+        bool m_halted = false;
         u64 m_total_machine_cycles = 0;
         u32 m_remaining_machine_cycles = 0;
 
