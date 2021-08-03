@@ -28,6 +28,12 @@ namespace gbc
 #error Unknown configuration
 #endif
 
+    enum GBCMode
+    {
+        GBC_MODE,
+        COMPATIBILITY_MODE
+    };
+
     extern bool s_silent;
 
     void initialize(spdlog::level::level_enum log_level = spdlog::level::trace, bool silent = false);

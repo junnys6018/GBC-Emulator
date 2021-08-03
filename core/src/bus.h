@@ -1,10 +1,12 @@
 #pragma once
-#include "util/common.h"
 #include "cartridge.h"
 #include "io_registers.h"
+#include "ppu.h"
+#include "util/common.h"
 
 namespace gbc
 {
+
     class Bus
     {
     public:
@@ -18,6 +20,8 @@ namespace gbc
 
         friend class GBC;
         friend class CPU;
+        friend class PPU;
+
     private:
         Cartridge* m_cartridge;
         IORegisters m_registers;

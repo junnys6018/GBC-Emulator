@@ -75,7 +75,7 @@ namespace gbc
         return clocks;
     }
 
-    void CPU::run_until(u64 clock) {}
+    void CPU::run_until(u64 t_cycle) {}
 
     bool CPU::check_for_interrupt()
     {

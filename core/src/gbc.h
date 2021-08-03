@@ -3,6 +3,7 @@
 #include "cpu.h"
 #include "divider.h"
 #include "io_registers.h"
+#include "ppu.h"
 #include "util/log.h"
 
 namespace gbc
@@ -23,19 +24,25 @@ namespace gbc
         inline const u8* get_hram() const { return m_bus.get_hram(); }
         inline const u8* get_rom() const { return m_cartridge->get_rom(); }
         inline const IORegisters& get_io_reg() const { return m_bus.m_registers; }
+        inline const u32* get_framebuffer() const { return m_ppu.get_framebuffer(); }
         u32 next_timer_event() const;
 
 #if defined(GBC_COMPILE_TESTS)
         friend class ::GBCTests;
 #endif
+        friend class PPU;
+
     private:
         Scope<Cartridge> m_cartridge;
         Bus m_bus;
         CPU m_cpu;
+        PPU m_ppu;
         const Divider m_div;
         u64 m_total_t_cycles = 0;
-
+        GBCMode m_mode = COMPATIBILITY_MODE;
 
         void clock_timers(u32 t_clocks);
     };
+
+
 }

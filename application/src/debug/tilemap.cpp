@@ -51,7 +51,7 @@ namespace app
         ImGui::Begin(title);
         u32 tilemap[256 * 256];
         const u8* vram = gbc.get_vram();
-        AddressingMode mode = (gbc.get_io_reg().m_lcdc & GBC_GB_WINDOW_TILE_DATA_AREA_MASK) ? AddressingMode8000 : AddressingMode8800;
+        AddressingMode mode = (gbc.get_io_reg().m_lcdc & GBC_BG_WINDOW_TILE_DATA_AREA_MASK) ? AddressingMode8000 : AddressingMode8800;
         render_tilemap(tilemap, vram, mode);
         m_texture.set_data(tilemap);
 

@@ -28,7 +28,7 @@ namespace app
         other.m_handle = 0;
         return *this;
     }
-    void Texture::set_data(void* pixels, u32 xoff, u32 yoff, u32 w, u32 h)
+    void Texture::set_data(const void* pixels, u32 xoff, u32 yoff, u32 w, u32 h)
     {
         glBindTexture(GL_TEXTURE_2D, m_handle);
         if (w == 0)

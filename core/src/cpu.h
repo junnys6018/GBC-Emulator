@@ -37,7 +37,7 @@ namespace gbc
         CPU(Bus* bus);
         void clock();
         u32 step();
-        void run_until(u64 clock);
+        void run_until(u64 t_cycle);
         CPUData get_cpu_data() const;
         inline u16 get_pc() const { return PC; }
         inline u16 get_sp() const { return SP; }

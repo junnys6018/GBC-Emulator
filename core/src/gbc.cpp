@@ -2,7 +2,8 @@
 
 namespace gbc
 {
-    GBC::GBC(const std::string& file) : m_cartridge(Cartridge::from_rom(read_file(file))), m_bus(m_cartridge.get()), m_cpu(&m_bus), m_div(8)
+    GBC::GBC(const std::string& file)
+        : m_cartridge(Cartridge::from_rom(read_file(file))), m_bus(m_cartridge.get()), m_cpu(&m_bus), m_ppu(this), m_div(8)
     {
     }
 
@@ -15,12 +16,17 @@ namespace gbc
             u32 cycles = m_cpu.step() * 4; // Multiply by 4 to convert from m-cycles to t-cycles
             m_total_t_cycles += cycles;
             clock_timers(cycles);
+
+            for (int i = 0; i < cycles; i++)
+                m_ppu.clock();
         }
         else
         {
             u32 clocks = next_timer_event();
             m_total_t_cycles += clocks;
             clock_timers(clocks);
+            for (int i = 0; i < clocks; i++)
+                m_ppu.clock();
             if (clocks == 0)
             {
                 LOG_INFO("GBC halted forever");
@@ -66,4 +72,5 @@ namespace gbc
         else
             return 0;
     }
+
 }
