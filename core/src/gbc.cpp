@@ -3,7 +3,7 @@
 namespace gbc
 {
     GBC::GBC(const std::string& file)
-        : m_cartridge(Cartridge::from_rom(read_file(file))), m_bus(m_cartridge.get()), m_cpu(&m_bus), m_ppu(this), m_div(8)
+        : m_cartridge(Cartridge::from_rom(read_file(file))), m_bus(m_cartridge.get(), this), m_cpu(&m_bus), m_ppu(this), m_div(8)
     {
     }
 
@@ -34,6 +34,8 @@ namespace gbc
             ASSERT(reg->m_interrupt_flag & 0x1F);
         }
     }
+
+    void GBC::set_keys(Keys keys) { m_keys = keys; }
 
     void GBC::clock_timers(u32 t_clocks)
     {

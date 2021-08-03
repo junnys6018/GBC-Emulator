@@ -13,6 +13,7 @@ namespace gbc
     public:
         GBC(const std::string& file);
         void step();
+        void set_keys(Keys keys);
 
         // Getters
         inline CPUData get_cpu_data() const { return m_cpu.get_cpu_data(); }
@@ -31,6 +32,7 @@ namespace gbc
         friend class ::GBCTests;
 #endif
         friend class PPU;
+        friend class IORegisters;
 
     private:
         Scope<Cartridge> m_cartridge;
@@ -39,10 +41,10 @@ namespace gbc
         PPU m_ppu;
         const Divider m_div;
         u64 m_total_t_cycles = 0;
-        GBCMode m_mode = COMPATIBILITY_MODE;
+        GBCMode m_mode = GBCMode::COMPATIBILITY;
+        Keys m_keys;
 
         void clock_timers(u32 t_clocks);
     };
-
 
 }

@@ -8,7 +8,11 @@
 //#define GBC_TILE_VRAM_BANK_MASK 0x08
 //#define GBC_BG_PALETTE_MASK 0x07
 
+// joyp masks
+#define GBC_ACTION_BTN_MASK 0x20
+#define GBC_DIRECTION_BTN_MASK 0x10
 #define GBC_IOREG_JOYP 0xFF00
+
 #define GBC_IOREG_DIVIDER_REGISTER 0xFF04
 #define GBC_IOREG_TIMER_COUNTER 0xFF05
 #define GBC_IOREG_TIMER_MODULO 0xFF06
@@ -58,10 +62,11 @@
 
 namespace gbc
 {
+    class GBC;
     class IORegisters
     {
     public:
-        IORegisters();
+        IORegisters(GBC* gbc);
         u8 cpu_read_byte(u16 addr);
         void cpu_write_byte(u16 addr, u8 byte);
         u8 peek_byte(u16 addr) const;
@@ -87,5 +92,7 @@ namespace gbc
         u8 m_ppu_wy = 0x00;           // 0xFF4A
         u8 m_ppu_wx = 0x00;           // 0xFF4B
         u8 m_interrupt_enable = 0x00; // 0xFFFF
+    private:
+        GBC* m_gbc;
     };
 }

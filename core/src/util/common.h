@@ -28,10 +28,22 @@ namespace gbc
 #error Unknown configuration
 #endif
 
-    enum GBCMode
+    struct Keys
     {
-        GBC_MODE,
-        COMPATIBILITY_MODE
+        u8 right : 1;
+        u8 left : 1;
+        u8 up : 1;
+        u8 down : 1;
+        u8 a : 1;
+        u8 b : 1;
+        u8 select : 1;
+        u8 start : 1;
+    };
+
+    enum class GBCMode
+    {
+        GBC,
+        COMPATIBILITY
     };
 
     extern bool s_silent;

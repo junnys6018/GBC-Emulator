@@ -10,6 +10,7 @@
 
 #include "debug/disassembly.h"
 #include "debug/io_registers.h"
+#include "debug/lcd.h"
 #include "debug/memory.h"
 #include "debug/stack.h"
 #include "debug/tiledata.h"
@@ -43,7 +44,7 @@ namespace app
         m_window = create_scope<Window>("GBC Emulator - By Jun Lim", 1550, 870, true);
         ImGuiLayer::initialize(m_window->m_handle);
 
-        m_gbc = create_scope<GBC>("roms/02-interrupts.gb");
+        m_gbc = create_scope<GBC>(rom);
 
         m_window->m_input.m_on_key_pressed.add_event_listener([&](i32 key) -> bool {
             if (key == GLFW_KEY_SPACE)
@@ -70,6 +71,7 @@ namespace app
         static TiledataWindow tiledata_window;
         static TilemapWindow tilemap_window;
         static IORegistersWindow registers_window;
+        static LCDWindow lcd_window;
 
         // u32 cnt = 1692350;
         u32 cnt = 0;
@@ -81,6 +83,19 @@ namespace app
             ImGuiLayer::begin();
             ImGui::DockSpaceOverViewport();
 
+            // Set the keys
+            Input& input = m_window->m_input;
+            gbc::Keys keys;
+            keys.up = !input.is_key_down(GLFW_KEY_UP);
+            keys.down = !input.is_key_down(GLFW_KEY_DOWN);
+            keys.left = !input.is_key_down(GLFW_KEY_LEFT);
+            keys.right = !input.is_key_down(GLFW_KEY_RIGHT);
+            keys.a = !input.is_key_down(GLFW_KEY_Z);
+            keys.b = !input.is_key_down(GLFW_KEY_X);
+            keys.start = !input.is_key_down(GLFW_KEY_ENTER);
+            keys.select = !input.is_key_down(GLFW_KEY_TAB);
+            m_gbc->set_keys(keys);
+
             // Rendering
             draw_cpu_window();
             disassembly_window.draw_window("Disassembly", *m_gbc, m_gbc->get_pc());
@@ -89,6 +104,7 @@ namespace app
             tiledata_window.draw_window("Tiledata", *m_gbc);
             registers_window.draw_window("IO Registers", *m_gbc);
             tilemap_window.draw_window("Tilemap", *m_gbc);
+            lcd_window.draw_window("LCD", *m_gbc);
 
             if (m_step_count < cnt)
             {
@@ -178,6 +194,14 @@ namespace app
                 m_step_count++;
                 m_gbc->step();
             }
+        }
+
+        if (ImGui::Button("reset"))
+        {
+            m_paused = true;
+            m_step_count = 0;
+            m_wait_addr = 0;
+            m_gbc = create_scope<GBC>(rom);
         }
         ImGui::End();
     }

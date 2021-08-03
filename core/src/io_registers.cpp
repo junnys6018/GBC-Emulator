@@ -1,9 +1,10 @@
 #include "io_registers.h"
 #include "util/log.h"
+#include "gbc.h"
 
 namespace gbc
 {
-    IORegisters::IORegisters() : m_timer(10) {}
+    IORegisters::IORegisters(GBC* gbc) : m_timer(10), m_gbc(gbc) {}
     u8 IORegisters::cpu_read_byte(u16 addr)
     {
         switch (addr)
@@ -33,7 +34,16 @@ namespace gbc
         static u32 period_lut[4] = {10, 4, 6, 8};
         switch (addr)
         {
-        case GBC_IOREG_JOYP: m_joyp = (byte & 0xF0) | (m_joyp & 0x0F); return;
+        case GBC_IOREG_JOYP:
+        {
+            m_joyp = (byte & 0xF0);
+            u8 keys = gbc::bit_cast<u8>(m_gbc->m_keys);
+            if (!(m_joyp & GBC_ACTION_BTN_MASK))
+                m_joyp |= (keys >> 4);
+            if (!(m_joyp & GBC_DIRECTION_BTN_MASK))
+                m_joyp |= (keys & 0x0F);
+            return;
+        }
         case GBC_IOREG_DIVIDER_REGISTER: m_divider_register = 0; return;
         case GBC_IOREG_TIMER_COUNTER: m_timer_counter = byte; return;
         case GBC_IOREG_TIMER_MODULO: m_timer_modulo = byte; return;

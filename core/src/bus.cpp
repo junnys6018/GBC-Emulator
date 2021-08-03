@@ -3,7 +3,7 @@
 
 namespace gbc
 {
-    Bus::Bus(Cartridge* cartridge) : m_cartridge(cartridge)
+    Bus::Bus(Cartridge* cartridge, GBC* gbc) : m_cartridge(cartridge), m_registers(gbc)
     {
         m_vram.fill(0);
         m_wram.fill(0);
