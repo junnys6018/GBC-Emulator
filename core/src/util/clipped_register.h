@@ -23,7 +23,7 @@ namespace gbc
         {
             u64 ret = 0;
             for (u32 i = 0; i < n; i++)
-                ret |= ((u64)1 << n);
+                ret |= ((u64)1 << i);
 
             return ret;
         }

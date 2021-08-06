@@ -82,7 +82,6 @@ namespace app
         static LCDWindow lcd_window;
         static std::chrono::steady_clock clock;
 
-        // u32 cnt = 1692350;
         u32 cnt = 0;
         i32 inc = cnt / 144;
         // Game loop
@@ -101,8 +100,8 @@ namespace app
             keys.down = !input.is_key_down(GLFW_KEY_DOWN);
             keys.left = !input.is_key_down(GLFW_KEY_LEFT);
             keys.right = !input.is_key_down(GLFW_KEY_RIGHT);
-            keys.a = !input.is_key_down(GLFW_KEY_Z);
-            keys.b = !input.is_key_down(GLFW_KEY_X);
+            keys.a = !input.is_key_down(GLFW_KEY_X);
+            keys.b = !input.is_key_down(GLFW_KEY_Z);
             keys.start = !input.is_key_down(GLFW_KEY_ENTER);
             keys.select = !input.is_key_down(GLFW_KEY_TAB);
             m_gbc->set_keys(keys);
@@ -123,13 +122,17 @@ namespace app
                 {
                     i32 num = cnt - m_step_count;
                     for (int i = 0; i < num; i++)
+                    {
                         m_gbc->step();
+                    }
                     m_step_count += num;
                 }
                 else
                 {
                     for (int i = 0; i < inc; i++)
+                    {
                         m_gbc->step();
+                    }
                     m_step_count += inc;
                 }
             }

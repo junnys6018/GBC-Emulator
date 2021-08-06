@@ -11,7 +11,10 @@ namespace gbc
     {
         initialize();
     }
-    Cartridge::Cartridge(std::vector<u8>&& rom, const HeaderInfo& header_info) : m_rom(std::move(rom)), m_header_info(header_info) { initialize(); }
+    Cartridge::Cartridge(std::vector<u8>&& rom, const HeaderInfo& header_info) : m_rom(std::move(rom)), m_header_info(header_info)
+    {
+        initialize();
+    }
 
     void Cartridge::initialize() {}
 
@@ -148,7 +151,9 @@ namespace gbc
     switch (hi.mbc_type)                                                                                                                   \
     {                                                                                                                                      \
     case 0x00: /* ROM only*/ return create_scope<ROM>(fn(rom), hi);                                                                        \
-    case 0x01: /* MBC1 */ return create_scope<MBC1>(fn(rom), hi);                                                                          \
+    case 0x01:                                                                                                                             \
+    case 0x02:                                                                                                                             \
+    case 0x03: /* MBC1 */ return create_scope<MBC1>(fn(rom), hi);                                                                          \
     default: /* Capture unimplemented mbc's */ LOG_ERROR("Not yet implemented mbc: {}", get_cartridge_type(hi.mbc_type)); return nullptr;  \
     }
 

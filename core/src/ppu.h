@@ -1,6 +1,12 @@
 #pragma once
 #include "util/common.h"
 
+#define GBC_BG_TO_OAM_PRIORITY_MASK 0x80
+#define GBC_VERTICAL_FLIP_MASK 0x40
+#define GBC_HORIZONTAL_FLIP_MASK 0x20
+#define GBC_TILE_VRAM_BANK_MASK 0x08
+#define GBC_BG_PALETTE_MASK 0x07
+
 namespace gbc
 {
     class GBC;

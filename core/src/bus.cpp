@@ -53,7 +53,7 @@ namespace gbc
         else if (addr >= 0xFEA0 && addr < 0xFF00)
         {
             // Nintendo says use of this area is prohibited
-            LOG_ERROR("Attempt to read prohibited address {:4X}", addr);
+            // LOG_ERROR("Attempt to read prohibited address {:4X}", addr);
             return 0;
         }
         else if (addr >= 0xFF00 && addr < 0xFF80) // io registers
@@ -112,7 +112,7 @@ namespace gbc
         else if (addr >= 0xFEA0 && addr < 0xFF00)
         {
             // Nintendo says use of this area is prohibited
-            LOG_ERROR("Attempt to write to prohibited address {:4X}", addr);
+            // LOG_ERROR("Attempt to write to prohibited address {:4X}", addr);
         }
         else if (addr >= 0xFF00 && addr < 0xFF80) // io registers
         {

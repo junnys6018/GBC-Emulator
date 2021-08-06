@@ -49,13 +49,14 @@ namespace gbc
                 }
                 case PPUMode::DRAWING:
                 {
-                    for (u8 fetcher_x = 0; fetcher_x < 20; fetcher_x++)
+                    u32 tile_y_fine = (reg->m_ppu_scy + reg->m_ppu_ly) & 0xFF;
+                    u32 tile_offset = (reg->m_lcdc & GBC_BG_TILEMAP_AREA_MASK) ? 0x9C00 : 0x9800;
+                    std::array<u8, 168> pixel_fifo;
+                    for (u8 fetcher_x = 0; fetcher_x < 21; fetcher_x++)
                     {
                         // Get tile
                         u32 tile_x_coarse = ((reg->m_ppu_scx >> 3) + fetcher_x) & 0x1F;
-                        u32 tile_y_fine = (reg->m_ppu_scy + reg->m_ppu_ly) & 0xFF;
                         u32 tile_index = 32 * (tile_y_fine >> 3) + tile_x_coarse;
-                        u32 tile_offset = (reg->m_lcdc & GBC_BG_TILEMAP_AREA_MASK) ? 0x9C00 : 0x9800;
                         u8 tile_id = bus->ppu_read_byte(tile_offset + tile_index);
 
                         // Get tile data
@@ -66,7 +67,7 @@ namespace gbc
                         }
                         else
                         {
-                            tile_addr = 0x8000 + 16 * bit_cast<i8>(tile_id) + 2 * (tile_y_fine & 0x7);
+                            tile_addr = 0x9000 + 16 * bit_cast<i8>(tile_id) + 2 * (tile_y_fine & 0x7);
                         }
                         u8 tile_low = bus->ppu_read_byte(tile_addr);
                         u8 tile_high = bus->ppu_read_byte(tile_addr + 1);
@@ -75,10 +76,16 @@ namespace gbc
                         {
                             u8 mask = (0x80 >> i);
                             u8 pixel_id = ((tile_high & mask) ? 2 : 0) | ((tile_low & mask) ? 1 : 0);
-                            u32 color = s_dmg_palette[pixel_id];
-                            u32 framebuffer_index = reg->m_ppu_ly * 160 + fetcher_x * 8 + i;
-                            m_framebuffer[1 - m_frontbuffer][framebuffer_index] = color;
+                            u32 fifo_index = fetcher_x * 8 + i;
+                            pixel_fifo[fifo_index] = pixel_id;
                         }
+                    }
+
+                    u32 fine_x = (reg->m_ppu_scx & 0x07);
+                    for (i32 i = 0; i < 160; i++)
+                    {
+                        u32 color = s_dmg_palette[pixel_fifo[i + fine_x]];
+                        m_framebuffer[1 - m_frontbuffer][reg->m_ppu_ly * 160 + i] = color;
                     }
 
                     for (i32 sprite_idx = 0; sprite_idx < m_sprites.size(); sprite_idx += 4)
@@ -93,6 +100,11 @@ namespace gbc
 
                         // Get tile data
                         u32 fine_y = reg->m_ppu_ly - (y_position - 16);
+                        if (attributes & GBC_VERTICAL_FLIP_MASK)
+                        {
+                            fine_y = ((reg->m_lcdc & GBC_OBJ_SIZE_MASK) ? 15 : 7) - fine_y;
+                        }
+
                         u16 tile_addr = 0x8000 + 16 * tile_id + 2 * fine_y;
 
                         u8 tile_low = bus->ppu_read_byte(tile_addr);
@@ -103,9 +115,11 @@ namespace gbc
                             i32 x_pos = x_position - 8 + i;
                             if (x_pos < 0 || x_pos >= 160)
                                 continue;
+                            u8 mask = ((attributes & GBC_HORIZONTAL_FLIP_MASK) ? (0x01 << i) : (0x80 >> i));
 
-                            u8 mask = (0x80 >> i);
                             u8 pixel_id = ((tile_high & mask) ? 2 : 0) | ((tile_low & mask) ? 1 : 0);
+                            if (pixel_id == 0) // transparent
+                                continue;
                             u32 color = s_dmg_palette[pixel_id];
                             u32 framebuffer_index = reg->m_ppu_ly * 160 + x_pos;
                             m_framebuffer[1 - m_frontbuffer][framebuffer_index] = color;
@@ -114,9 +128,7 @@ namespace gbc
 
                     m_mode = PPUMode::HBLANK;
                     m_stall += 160;
-
                     m_sprites.fill(0xFF);
-
                     break;
                 }
                 case PPUMode::HBLANK: m_stall = 1; break;
@@ -137,8 +149,12 @@ namespace gbc
             {
                 m_dot = 0;
                 reg->m_ppu_ly++;
-                bool lyc = reg->m_ppu_ly == reg->m_ppu_lyc;
-                reg->m_lcd_stat |= (lyc ? GBC_LYC_FLAG_MASK : 0);
+
+                if (reg->m_ppu_ly == reg->m_ppu_lyc)
+                    reg->m_lcd_stat |= GBC_LYC_FLAG_MASK;
+                else
+                    reg->m_lcd_stat &= ~GBC_LYC_FLAG_MASK;
+
                 if (reg->m_ppu_ly == 144)
                 {
                     m_mode = PPUMode::VBLANK;

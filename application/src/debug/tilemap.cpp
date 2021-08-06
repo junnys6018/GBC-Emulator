@@ -22,7 +22,7 @@ namespace app
                 if (mode == AddressingMode8000)
                     tiledata_addr = 16 * tile_id;
                 else if (mode == AddressingMode8800)
-                    tiledata_addr = 0x8800 + 16 * gbc::bit_cast<i8>(tile_id);
+                    tiledata_addr = 0x1000 + 16 * gbc::bit_cast<i8>(tile_id);
 
                 for (u32 line = 0; line < 8; line++)
                 {
