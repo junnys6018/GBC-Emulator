@@ -5,8 +5,6 @@ namespace app
     TiledataWindow::TiledataWindow() : m_texture(128, 64 * 3, nullptr, GL_RGBA) {}
     static void render_tiledata(u32 bitmap[128 * 64], const u8* vram)
     {
-        static u32 palette[4] = {IM_COL32(155, 188, 15, 255), IM_COL32(139, 172, 15, 255), IM_COL32(48, 98, 48, 255),
-                                 IM_COL32(15, 56, 15, 255)};
         u32 i = 0;
         for (u32 tile = 0; tile < 128; tile++)
         {
@@ -25,7 +23,7 @@ namespace app
                     u32 pixel_y = tile_y * 8 + line;
                     u32 bitmap_index = pixel_y * 8 * 16 + pixel_x;
 
-                    bitmap[bitmap_index] = palette[color_id];
+                    bitmap[bitmap_index] = s_dmg_palette[color_id];
                 }
             }
         }

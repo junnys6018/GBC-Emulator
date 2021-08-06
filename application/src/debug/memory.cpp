@@ -14,6 +14,7 @@ namespace app
         set_options(m_rom_view);
         set_options(m_wram_view);
         set_options(m_hram_view);
+        set_options(m_oam_view);
     }
 
     void MemoryWindow::draw_window(const char* title, const GBC& gbc)
@@ -22,7 +23,7 @@ namespace app
 
         if (ImGui::BeginTabBar("Memory Tabs"))
         {
-            if (ImGui::BeginTabItem("rom")) // todo
+            if (ImGui::BeginTabItem("rom"))
             {
                 m_rom_view.DrawContents((void*)gbc.get_rom(), 0x8000);
                 ImGui::EndTabItem();
@@ -35,6 +36,11 @@ namespace app
             if (ImGui::BeginTabItem("hram"))
             {
                 m_hram_view.DrawContents((void*)gbc.get_hram(), 127, 0xFF80);
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("oam"))
+            {
+                m_oam_view.DrawContents((void*)gbc.get_oam(), 160, 0xFE00);
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();

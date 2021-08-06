@@ -13,10 +13,6 @@
 #define GBC_DIRECTION_BTN_MASK 0x10
 #define GBC_IOREG_JOYP 0xFF00
 
-#define GBC_IOREG_DIVIDER_REGISTER 0xFF04
-#define GBC_IOREG_TIMER_COUNTER 0xFF05
-#define GBC_IOREG_TIMER_MODULO 0xFF06
-
 // timer_control masks
 #define GBC_TIMER_ENABLE_MASK 0x04
 #define GBC_TIMER_CLOCK_MASK 0x03
@@ -50,10 +46,15 @@
 #define GBC_PPU_MODE_MASK 0x03
 #define GBC_IOREG_LCD_STAT 0xFF41
 
+#define GBC_IOREG_DIVIDER_REGISTER 0xFF04
+#define GBC_IOREG_TIMER_COUNTER 0xFF05
+#define GBC_IOREG_TIMER_MODULO 0xFF06
+#define GBC_IOREG_NR51 0xFF25
 #define GBC_IOREG_PPU_SCY 0xFF42
 #define GBC_IOREG_PPU_SCX 0xFF43
 #define GBC_IOREG_PPU_LY 0xFF44
 #define GBC_IOREG_PPU_LYC 0xFF45
+#define GBC_IOREG_DMA 0xFF46
 #define GBC_IOREG_PPU_BGP 0xFF47
 #define GBC_IOREG_PPU_OBP0 0xFF48
 #define GBC_IOREG_PPU_OBP1 0xFF49
@@ -80,12 +81,14 @@ namespace gbc
         u8 m_timer_modulo = 0x00;     // 0xFF06
         u8 m_timer_control = 0xF8;    // 0xFF07
         u8 m_interrupt_flag = 0xE1;   // 0xFF0F
+        u8 m_nr51 = 0xF3;             // 0xFF25
         u8 m_lcdc = 0x91;             // 0xFF40
         u8 m_lcd_stat = 0x85;         // 0xFF41
         u8 m_ppu_scy = 0x00;          // 0xFF42
         u8 m_ppu_scx = 0x00;          // 0xFF43
         u8 m_ppu_ly = 0x00;           // 0xFF44
         u8 m_ppu_lyc = 0x00;          // 0xFF45
+        u8 m_dma = 0x00;              // 0xFF46
         u8 m_ppu_bgp = 0xFC;          // 0xFF47
         u8 m_ppu_obp0 = 0x00;         // 0xFF48
         u8 m_ppu_obp1 = 0x00;         // 0xFF49

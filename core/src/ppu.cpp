@@ -3,26 +3,50 @@
 #include "gbc.h"
 #include "io_registers.h"
 
-#define COL32(R, G, B, A) (((u32)(A) << 24) | ((u32)(B) << 16) | ((u32)(G) << 8) | ((u32)(R) << 0))
-
 namespace gbc
 {
-    PPU::PPU(GBC* gbc) : m_gbc(gbc) { std::memset(m_framebuffer, 0, sizeof(m_framebuffer)); }
+    PPU::PPU(GBC* gbc) : m_gbc(gbc)
+    {
+        m_sprites.fill(0xFF);
+
+        for (i32 i = 0; i < 160 * 144; i++)
+            m_framebuffer[0][i] = COL32(155, 188, 15, 255);
+
+        for (i32 i = 0; i < 160 * 144; i++)
+            m_framebuffer[1][i] = COL32(155, 188, 15, 255);
+    }
 
     void PPU::clock()
     {
-        static u32 palette[4] = {COL32(155, 188, 15, 255), COL32(139, 172, 15, 255), COL32(48, 98, 48, 255), COL32(15, 56, 15, 255)};
         IORegisters* reg = &m_gbc->m_bus.m_registers;
 
         if (reg->m_lcdc & GBC_LCD_PPU_ENABLE_MASK)
         {
-            const u8* vram = m_gbc->get_vram();
+            Bus* bus = &m_gbc->m_bus;
 
             if (m_stall == 0)
             {
                 switch (m_mode)
                 {
-                case PPUMode::OBJ: m_stall = 80; break;
+                case PPUMode::OBJ:
+                {
+                    i32 sprite_buffer_index = 0;
+                    for (i32 obj_addr = 0xFE00; obj_addr < 0xFEA0 && sprite_buffer_index < m_sprites.size(); obj_addr += 4)
+                    {
+                        i32 y_position = bus->ppu_read_byte(obj_addr);
+                        i32 y_max = (reg->m_lcdc & GBC_OBJ_SIZE_MASK) ? y_position : y_position - 8;
+                        if (reg->m_ppu_ly < y_max && reg->m_ppu_ly >= (y_position - 16))
+                        {
+                            m_sprites[sprite_buffer_index + 0] = y_position;
+                            m_sprites[sprite_buffer_index + 1] = bus->ppu_read_byte(obj_addr + 1);
+                            m_sprites[sprite_buffer_index + 2] = bus->ppu_read_byte(obj_addr + 2);
+                            m_sprites[sprite_buffer_index + 3] = bus->ppu_read_byte(obj_addr + 3);
+                            sprite_buffer_index += 4;
+                        }
+                    }
+                    m_stall = 80;
+                    break;
+                }
                 case PPUMode::DRAWING:
                 {
                     for (u8 fetcher_x = 0; fetcher_x < 20; fetcher_x++)
@@ -31,33 +55,67 @@ namespace gbc
                         u32 tile_x_coarse = ((reg->m_ppu_scx >> 3) + fetcher_x) & 0x1F;
                         u32 tile_y_fine = (reg->m_ppu_scy + reg->m_ppu_ly) & 0xFF;
                         u32 tile_index = 32 * (tile_y_fine >> 3) + tile_x_coarse;
-                        u32 tile_offset = (reg->m_lcdc & GBC_BG_TILEMAP_AREA_MASK) ? 0x1C00 : 0x1800;
-                        u8 tile_id = vram[tile_offset + tile_index];
+                        u32 tile_offset = (reg->m_lcdc & GBC_BG_TILEMAP_AREA_MASK) ? 0x9C00 : 0x9800;
+                        u8 tile_id = bus->ppu_read_byte(tile_offset + tile_index);
 
                         // Get tile data
-                        u32 tile_addr;
+                        u16 tile_addr;
                         if (reg->m_lcdc & GBC_BG_WINDOW_TILE_DATA_AREA_MASK)
                         {
-                            tile_addr = 16 * tile_id + 2 * (tile_y_fine & 0x7);
+                            tile_addr = 0x8000 + 16 * tile_id + 2 * (tile_y_fine & 0x7);
                         }
                         else
                         {
-                            tile_addr = 16 * bit_cast<i8>(tile_id) + 2 * (tile_y_fine & 0x7);
+                            tile_addr = 0x8000 + 16 * bit_cast<i8>(tile_id) + 2 * (tile_y_fine & 0x7);
                         }
-                        u8 tile_low = vram[tile_addr];
-                        u8 tile_high = vram[tile_addr + 1];
+                        u8 tile_low = bus->ppu_read_byte(tile_addr);
+                        u8 tile_high = bus->ppu_read_byte(tile_addr + 1);
 
                         for (i32 i = 0; i < 8; i++)
                         {
                             u8 mask = (0x80 >> i);
                             u8 pixel_id = ((tile_high & mask) ? 2 : 0) | ((tile_low & mask) ? 1 : 0);
-                            u32 color = palette[pixel_id];
+                            u32 color = s_dmg_palette[pixel_id];
                             u32 framebuffer_index = reg->m_ppu_ly * 160 + fetcher_x * 8 + i;
                             m_framebuffer[1 - m_frontbuffer][framebuffer_index] = color;
                         }
                     }
+
+                    for (i32 sprite_idx = 0; sprite_idx < m_sprites.size(); sprite_idx += 4)
+                    {
+                        i32 y_position = m_sprites[sprite_idx + 0];
+                        i32 x_position = m_sprites[sprite_idx + 1];
+                        i32 tile_id = m_sprites[sprite_idx + 2];
+                        i32 attributes = m_sprites[sprite_idx + 3];
+
+                        if (reg->m_lcdc & GBC_OBJ_SIZE_MASK)
+                            tile_id = tile_id & 0xFE;
+
+                        // Get tile data
+                        u32 fine_y = reg->m_ppu_ly - (y_position - 16);
+                        u16 tile_addr = 0x8000 + 16 * tile_id + 2 * fine_y;
+
+                        u8 tile_low = bus->ppu_read_byte(tile_addr);
+                        u8 tile_high = bus->ppu_read_byte(tile_addr + 1);
+
+                        for (i32 i = 0; i < 8; i++)
+                        {
+                            i32 x_pos = x_position - 8 + i;
+                            if (x_pos < 0 || x_pos >= 160)
+                                continue;
+
+                            u8 mask = (0x80 >> i);
+                            u8 pixel_id = ((tile_high & mask) ? 2 : 0) | ((tile_low & mask) ? 1 : 0);
+                            u32 color = s_dmg_palette[pixel_id];
+                            u32 framebuffer_index = reg->m_ppu_ly * 160 + x_pos;
+                            m_framebuffer[1 - m_frontbuffer][framebuffer_index] = color;
+                        }
+                    }
+
                     m_mode = PPUMode::HBLANK;
-                    m_stall = 160;
+                    m_stall += 160;
+
+                    m_sprites.fill(0xFF);
 
                     break;
                 }
@@ -99,7 +157,7 @@ namespace gbc
             new_stat_line = new_stat_line || ((m_mode == PPUMode::VBLANK) && (reg->m_lcd_stat & GBC_INT_VBLANK_SRC_MASK));
             new_stat_line = new_stat_line || ((m_mode == PPUMode::OBJ) && (reg->m_lcd_stat & GBC_INT_OAM_SRC_MASK));
 
-            if (new_stat_line && !m_stat_line)
+            if (new_stat_line && !m_stat_line) // rising edge
             {
                 reg->m_interrupt_flag |= GBC_INT_LCD_STAT_MASK;
             }
@@ -108,5 +166,7 @@ namespace gbc
     }
 
     void PPU::run_until(u64 t_cycle) {}
+
+    u32 PPU::next_event() { return 0; }
 
 }

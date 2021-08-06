@@ -8,6 +8,7 @@ namespace gbc
     class ClippedUnsigned
     {
     public:
+        static_assert(std::is_integral_v<T> && std::is_unsigned_v<T>);
         static_assert(bits <= sizeof(T) * 8);
         ClippedUnsigned(T value = 0) : m_value(value & mask(bits)) {}
         inline void set(T value)
@@ -18,11 +19,11 @@ namespace gbc
         inline T get() const { return m_value; }
 
     private:
-        constexpr static u64 mask(u32 bits)
+        constexpr static u64 mask(u32 n)
         {
             u64 ret = 0;
-            for (u32 i = 0; i < bits; i++)
-                ret |= ((u64)1 << bits);
+            for (u32 i = 0; i < n; i++)
+                ret |= ((u64)1 << n);
 
             return ret;
         }

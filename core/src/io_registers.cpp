@@ -1,6 +1,6 @@
 #include "io_registers.h"
-#include "util/log.h"
 #include "gbc.h"
+#include "util/log.h"
 
 namespace gbc
 {
@@ -13,6 +13,7 @@ namespace gbc
         case GBC_IOREG_DIVIDER_REGISTER: return m_divider_register;
         case GBC_IOREG_TIMER_COUNTER: return m_timer_counter;
         case GBC_IOREG_TIMER_MODULO: return m_timer_modulo;
+        case GBC_IOREG_NR51: return m_nr51;
         case GBC_IOREG_TIMER_CONTROL: return m_timer_control;
         case GBC_IOREG_INTERRUPT_FLAG: return m_interrupt_flag;
         case GBC_IOREG_LCDC: return m_lcdc;
@@ -21,6 +22,7 @@ namespace gbc
         case GBC_IOREG_PPU_SCX: return m_ppu_scx;
         case GBC_IOREG_PPU_LY: return m_ppu_ly;
         case GBC_IOREG_PPU_LYC: return m_ppu_lyc;
+        case GBC_IOREG_DMA: return m_dma;
         case GBC_IOREG_PPU_BGP: return m_ppu_bgp;
         case GBC_IOREG_PPU_OBP0: return m_ppu_obp0;
         case GBC_IOREG_PPU_OBP1: return m_ppu_obp1;
@@ -47,6 +49,7 @@ namespace gbc
         case GBC_IOREG_DIVIDER_REGISTER: m_divider_register = 0; return;
         case GBC_IOREG_TIMER_COUNTER: m_timer_counter = byte; return;
         case GBC_IOREG_TIMER_MODULO: m_timer_modulo = byte; return;
+        case GBC_IOREG_NR51: m_nr51 = byte; return;
         case GBC_IOREG_TIMER_CONTROL:
             m_timer_control = byte;
             m_timer.m_period_log2 = period_lut[m_timer_control & GBC_TIMER_CLOCK_MASK];
@@ -58,6 +61,13 @@ namespace gbc
         case GBC_IOREG_PPU_SCX: m_ppu_scx = byte; return;
         case GBC_IOREG_PPU_LY: return; // write only
         case GBC_IOREG_PPU_LYC: m_ppu_lyc = byte; return;
+        case GBC_IOREG_DMA:
+            m_dma = byte;
+            LOG_TRACE("oam dma started (page={:2X})", byte);
+            if (byte >= 0xE0)
+                LOG_ERROR("illegal value {:2X} written to 0xFF46 (dma)");
+            m_gbc->m_oam_dma_transfer = 160;
+            return;
         case GBC_IOREG_PPU_BGP: m_ppu_bgp = byte; return;
         case GBC_IOREG_PPU_OBP0: m_ppu_obp0 = byte; return;
         case GBC_IOREG_PPU_OBP1: m_ppu_obp1 = byte; return;

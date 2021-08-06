@@ -71,6 +71,7 @@ namespace gbc
             else
                 return 0;
         }
+        ASSERT(false);
     }
     u8 MBC1::peek_cartridge(u16 addr) const { return const_cast<MBC1*>(this)->read_cartridge(addr); }
 

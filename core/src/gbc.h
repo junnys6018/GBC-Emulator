@@ -13,6 +13,7 @@ namespace gbc
     public:
         GBC(const std::string& file);
         void step();
+        void clock();
         void set_keys(Keys keys);
 
         // Getters
@@ -23,9 +24,11 @@ namespace gbc
         inline const u8* get_vram() const { return m_bus.get_vram(); }
         inline const u8* get_wram() const { return m_bus.get_wram(); }
         inline const u8* get_hram() const { return m_bus.get_hram(); }
+        inline const u8* get_oam() const { return m_bus.get_oam(); }
         inline const u8* get_rom() const { return m_cartridge->get_rom(); }
         inline const IORegisters& get_io_reg() const { return m_bus.m_registers; }
         inline const u32* get_framebuffer() const { return m_ppu.get_framebuffer(); }
+
         u32 next_timer_event() const;
 
 #if defined(GBC_COMPILE_TESTS)
@@ -33,6 +36,7 @@ namespace gbc
 #endif
         friend class PPU;
         friend class IORegisters;
+        friend class Bus;
 
     private:
         Scope<Cartridge> m_cartridge;
@@ -43,8 +47,10 @@ namespace gbc
         u64 m_total_t_cycles = 0;
         GBCMode m_mode = GBCMode::COMPATIBILITY;
         Keys m_keys;
+        u32 m_oam_dma_transfer = 0;
 
         void clock_timers(u32 t_clocks);
+        void do_dma_cycles(u32 count);
     };
 
 }

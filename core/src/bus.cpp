@@ -1,9 +1,10 @@
 #include "bus.h"
+#include "gbc.h"
 #include "util/log.h"
 
 namespace gbc
 {
-    Bus::Bus(Cartridge* cartridge, GBC* gbc) : m_cartridge(cartridge), m_registers(gbc)
+    Bus::Bus(Cartridge* cartridge, GBC* gbc) : m_gbc(gbc), m_registers(gbc)
     {
         m_vram.fill(0);
         m_wram.fill(0);
@@ -13,9 +14,10 @@ namespace gbc
 
     u8 Bus::cpu_read_byte(u16 addr)
     {
+        Cartridge* cartridge = m_gbc->m_cartridge.get();
         if (addr >= 0x0000 && addr < 0x8000)
         {
-            return m_cartridge->read_cartridge(addr);
+            return cartridge->read_cartridge(addr);
         }
         else if (addr >= 0x8000 && addr < 0xA000)
         {
@@ -24,7 +26,7 @@ namespace gbc
         }
         else if (addr >= 0xA000 && addr < 0xC000)
         {
-            return m_cartridge->read_cartridge(addr);
+            return cartridge->read_cartridge(addr);
         }
         else if (addr >= 0xC000 && addr < 0xD000)
         {
@@ -51,7 +53,7 @@ namespace gbc
         else if (addr >= 0xFEA0 && addr < 0xFF00)
         {
             // Nintendo says use of this area is prohibited
-            LOG_TRACE("Attempt to read prohibited address {0:x}", addr);
+            LOG_ERROR("Attempt to read prohibited address {:4X}", addr);
             return 0;
         }
         else if (addr >= 0xFF00 && addr < 0xFF80) // io registers
@@ -71,9 +73,10 @@ namespace gbc
 
     void Bus::cpu_write_byte(u16 addr, u8 byte)
     {
+        Cartridge* cartridge = m_gbc->m_cartridge.get();
         if (addr >= 0x0000 && addr < 0x8000)
         {
-            m_cartridge->write_cartridge(addr, byte);
+            cartridge->write_cartridge(addr, byte);
         }
         else if (addr >= 0x8000 && addr < 0xA000)
         {
@@ -82,7 +85,7 @@ namespace gbc
         }
         else if (addr >= 0xA000 && addr < 0xC000)
         {
-            m_cartridge->write_cartridge(addr, byte);
+            cartridge->write_cartridge(addr, byte);
         }
         else if (addr >= 0xC000 && addr < 0xD000)
         {
@@ -109,7 +112,7 @@ namespace gbc
         else if (addr >= 0xFEA0 && addr < 0xFF00)
         {
             // Nintendo says use of this area is prohibited
-            LOG_TRACE("Attempt to write to prohibited address {0:x}", addr);
+            LOG_ERROR("Attempt to write to prohibited address {:4X}", addr);
         }
         else if (addr >= 0xFF00 && addr < 0xFF80) // io registers
         {
@@ -125,15 +128,35 @@ namespace gbc
             m_registers.m_interrupt_enable = byte;
         }
     }
+
+    u8 Bus::ppu_read_byte(u16 addr)
+    {
+        if (addr >= 0x8000 && addr < 0xA000)
+        {
+            addr &= 0x1FFF;
+            return m_vram[addr];
+        }
+        else if (addr >= 0xFE00 && addr < 0xFEA0)
+        {
+            if (m_gbc->m_oam_dma_transfer == 0)
+            {
+                addr &= 0xFF;
+                return m_oam[addr];
+            }
+            return 0xFF;
+        }
+        ASSERT(false);
+    }
     u8 Bus::peek_byte(u16 addr) const
     {
+        Cartridge* cartridge = m_gbc->m_cartridge.get();
         if (addr >= 0x0000 && addr < 0x8000)
         {
-            return m_cartridge->peek_cartridge(addr);
+            return cartridge->peek_cartridge(addr);
         }
         else if (addr >= 0xA000 && addr < 0xC000)
         {
-            return m_cartridge->peek_cartridge(addr);
+            return cartridge->peek_cartridge(addr);
         }
         else if (addr >= 0xFF00 && addr < 0xFF80)
         {

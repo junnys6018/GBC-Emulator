@@ -17,21 +17,61 @@ namespace gbc
             m_total_t_cycles += cycles;
             clock_timers(cycles);
 
+            if (m_oam_dma_transfer)
+            {
+                u32 count = std::min(cycles / 4, m_oam_dma_transfer);
+                do_dma_cycles(count);
+            }
+
             for (int i = 0; i < cycles; i++)
                 m_ppu.clock();
         }
         else
         {
             u32 clocks = next_timer_event();
+            clocks = clamped_min(clocks, m_ppu.next_event());
             m_total_t_cycles += clocks;
             clock_timers(clocks);
-            for (int i = 0; i < clocks; i++)
-                m_ppu.clock();
-            if (clocks == 0)
+
+            if (m_oam_dma_transfer)
             {
-                LOG_INFO("GBC halted forever");
+                u32 count = std::min((u32)(clocks + m_total_t_cycles % 4) / 4, m_oam_dma_transfer);
+                do_dma_cycles(count);
             }
+
+            for (i32 i = 0; i < clocks; i++)
+                m_ppu.clock();
+
+            if (clocks == 0)
+                LOG_INFO("GBC halted forever");
+
             ASSERT(reg->m_interrupt_flag & 0x1F);
+        }
+    }
+
+    void GBC::clock()
+    {
+        IORegisters* reg = &m_bus.m_registers;
+        m_total_t_cycles++;
+
+        if (m_oam_dma_transfer > 0 && (m_total_t_cycles % 4 == 0))
+        {
+            do_dma_cycles(1);
+        }
+
+        if (!m_cpu.m_halted || (reg->m_interrupt_enable & reg->m_interrupt_flag & 0x1F))
+        {
+            m_cpu.m_halted = false;
+
+            if (m_total_t_cycles % 4 == 0)
+                m_cpu.clock();
+            clock_timers(1);
+            m_ppu.clock();
+        }
+        else
+        {
+            clock_timers(1);
+            m_ppu.clock();
         }
     }
 
@@ -75,4 +115,18 @@ namespace gbc
             return 0;
     }
 
+    void GBC::do_dma_cycles(u32 count)
+    {
+        IORegisters* reg = &m_bus.m_registers;
+        u16 oam_addr = 160 - m_oam_dma_transfer;
+        u16 src_addr = (static_cast<u16>(reg->m_dma) << 8) + (160 - m_oam_dma_transfer);
+
+        for (i32 i = 0; i < count; i++)
+        {
+            u8 byte = m_bus.cpu_read_byte(src_addr++);
+            m_bus.m_oam[oam_addr++] = byte;
+        }
+
+        m_oam_dma_transfer -= count;
+    }
 }

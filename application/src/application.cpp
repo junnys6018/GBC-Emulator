@@ -18,6 +18,14 @@
 
 #include "opengl/debug.h"
 
+#ifdef PLATFORM_WINDOWS
+#include <Windows.h>
+#endif
+
+#include <chrono>
+
+const char* rom = "roms/Tetris.gb";
+
 namespace app
 {
     bool Application::s_initialized = false;
@@ -72,11 +80,14 @@ namespace app
         static TilemapWindow tilemap_window;
         static IORegistersWindow registers_window;
         static LCDWindow lcd_window;
+        static std::chrono::steady_clock clock;
 
         // u32 cnt = 1692350;
         u32 cnt = 0;
         i32 inc = cnt / 144;
         // Game loop
+
+        auto beg = clock.now();
         while (!glfwWindowShouldClose(m_window->m_handle))
         {
             Glfw::poll_events();
@@ -123,23 +134,21 @@ namespace app
                 }
             }
 
+            auto tp = clock.now();
+            using my_duration = std::chrono::duration<double, std::ratio<1, 1>>;
             if (!m_paused)
             {
-                for (int i = 0; i < 30000; i++)
+                my_duration duration = std::chrono::duration_cast<my_duration>(tp - beg);
+                i32 clocks = duration.count() * gbc::MASTER_CLOCK_FREQ;
+                for (int i = 0; i < clocks; i++)
                 {
-                    m_gbc->step();
-                    m_step_count++;
-                    u8 opcode = m_gbc->peek_byte(m_gbc->get_pc());
-                    if (opcode == 0x10) // stop
-                    {
-                        m_paused = true;
-                        break;
-                    }
+                    m_gbc->clock();
                 }
             }
+            beg = tp;
 
             // Clear the colorbuffer
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
             ImGui::ShowDemoWindow();
@@ -203,6 +212,33 @@ namespace app
             m_wait_addr = 0;
             m_gbc = create_scope<GBC>(rom);
         }
+
+#ifdef PLATFORM_WINDOWS
+        if (ImGui::Button("open..."))
+        {
+            char filepath[256];
+            OPENFILENAMEA ofn;
+
+            ZeroMemory(&ofn, sizeof(ofn));
+            ofn.lStructSize = sizeof(ofn);
+            ofn.lpstrFile = filepath;
+            // Set lpstrFile[0] to '\0' so that GetOpenFileName does not
+            // use the contents of szFile to initialize itself.
+            ofn.lpstrFile[0] = '\0';
+            ofn.nMaxFile = 256;
+            ofn.lpstrFilter = "All\0*.*\0GB (.gb)\0*.gb\0";
+            ofn.nFilterIndex = 2;
+            ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+            if (GetOpenFileNameA(&ofn))
+            {
+                m_paused = true;
+                m_step_count = 0;
+                m_wait_addr = 0;
+                m_gbc = create_scope<GBC>(filepath);
+            }
+        }
+#endif
         ImGui::End();
     }
 }

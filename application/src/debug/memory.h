@@ -16,5 +16,6 @@ namespace app
         MemoryEditor m_rom_view;
         MemoryEditor m_wram_view;
         MemoryEditor m_hram_view;
+        MemoryEditor m_oam_view;
     };
 }

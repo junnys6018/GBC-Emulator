@@ -9,6 +9,8 @@
 class GBCTests;
 #endif
 
+#define COL32(R, G, B, A) (((u32)(A) << 24) | ((u32)(B) << 16) | ((u32)(G) << 8) | ((u32)(R) << 0))
+
 namespace gbc
 {
     using i8 = int8_t;
@@ -27,6 +29,8 @@ namespace gbc
 #if !defined(CONFIGURATION_DEBUG) && !defined(CONFIGURATION_RELEASE)
 #error Unknown configuration
 #endif
+
+    constexpr u32 MASTER_CLOCK_FREQ = 4194304;
 
     struct Keys
     {
@@ -47,6 +51,7 @@ namespace gbc
     };
 
     extern bool s_silent;
+    extern const u32 s_dmg_palette[4];
 
     void initialize(spdlog::level::level_enum log_level = spdlog::level::trace, bool silent = false);
 
@@ -81,6 +86,20 @@ namespace gbc
     std::vector<u8> read_file(const std::string& filename);
 
     inline u32 bank(u32 bank, u32 bank_size) { return bank * bank_size; }
+
+    /*
+        calculates the mininum between two numbers a and b
+        however if either a or b is equal to zero then the other
+        number is returned
+    */
+    inline u32 clamped_min(u32 a, u32 b)
+    {
+        if (a == 0)
+            return b;
+        if (b == 0)
+            return a;
+        return a < b ? a : b;
+    }
 
 #ifdef GBC_HAS_CXX_20
     template <class To, class From>

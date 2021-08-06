@@ -11,6 +11,7 @@ namespace gbc
         PPU(GBC* gbc);
         void clock();
         void run_until(u64 t_cycle);
+        u32 next_event();
         inline const u32* get_framebuffer() const { return &m_framebuffer[m_frontbuffer][0]; }
 
     private:
@@ -28,6 +29,7 @@ namespace gbc
         u32 m_frontbuffer = 0;
         bool m_stat_line = 0;
         u32 m_stall = 0;
+        std::array<u8, 40> m_sprites;
     };
 
 }

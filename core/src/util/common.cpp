@@ -3,6 +3,7 @@
 #include <fstream>
 namespace gbc
 {
+    const u32 s_dmg_palette[4] = {COL32(155, 188, 15, 255), COL32(139, 172, 15, 255), COL32(48, 98, 48, 255), COL32(15, 56, 15, 255)};
     bool s_silent = false;
     void initialize(spdlog::level::level_enum log_level, bool silent)
     {
