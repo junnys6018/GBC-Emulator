@@ -44,6 +44,7 @@
 
 */
 
+#include "common.h"
 #include <catch_amalgamated.hpp>
 #include <gbc.h>
 using namespace gbc;
@@ -55,7 +56,7 @@ const u16 FAILED_INSTR_CHECK = 0xC4E8;
 const u16 FAILED_ROUTINE_ADDR = 0xC1B9;
 
 // clang-format off
-const char* roms[] = {
+static const char* roms[] = {
     "roms/blargg/03-op sp,hl.gb",
     "roms/blargg/04-op r,imm.gb",
     "roms/blargg/05-op rp.gb",
@@ -84,14 +85,6 @@ u16 get_u16(u16 addr, const GBC& gbc)
     return operand;
 }
 
-std::string get_filename(const std::string& path)
-{
-    size_t backslash = path.find_last_of('/');
-    if (backslash == std::string::npos)
-        return path;
-    return path.substr(backslash + 1);
-}
-
 bool test_rom(const char* test)
 {
     auto filename = get_filename(test);
@@ -112,12 +105,12 @@ bool test_rom(const char* test)
         u8 opcode2 = gbc->peek_byte(INSTR_ADDR + 1);
         u8 opcode3 = gbc->peek_byte(INSTR_ADDR + 2);
 
-        LOG_ERROR("Testing {}... Failed! steps: {} opcode: {:2X} {:2X} {:2X}\n", filename, steps, opcode1, opcode2, opcode3);
+        CLIENT_LOG_ERROR("Testing {}... Failed! steps: {} opcode: {:2X} {:2X} {:2X}", filename, steps, opcode1, opcode2, opcode3);
         return false;
     }
     else
     {
-        LOG_INFO("Testing {}... Passed!", filename);
+        CLIENT_LOG_INFO("Testing {}... Passed!", filename);
         return true;
     }
 }
@@ -147,12 +140,12 @@ bool test_other(const std::string& rom)
         {
             test_name[i++] = gbc::bit_cast<char>(ch);
         }
-        LOG_ERROR("Testing {}... Failed! test_name: {} result: {} steps: {}\n", rom, test_name, result, steps);
+        CLIENT_LOG_ERROR("Testing {}... Failed! test_name: {} result: {} steps: {}", rom, test_name, result, steps);
         return false;
     }
     else
     {
-        LOG_INFO("Testing {}... Passed!", rom);
+        CLIENT_LOG_INFO("Testing {}... Passed!", rom);
         return true;
     }
 }

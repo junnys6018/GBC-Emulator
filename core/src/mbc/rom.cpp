@@ -13,7 +13,7 @@ namespace gbc
             if (addr < m_ram.size())
                 m_ram[addr] = data;
             else
-                LOG_TRACE("Attempt to write to ram when none exists");
+                CORE_LOG_TRACE("Attempt to write to ram when none exists");
         }
     }
 
@@ -28,7 +28,7 @@ namespace gbc
                 return m_ram[addr];
             else
             {
-                LOG_TRACE("Attempt to read from ram when none exists");
+                CORE_LOG_TRACE("Attempt to read from ram when none exists");
                 return 0xFF;
             }
         }

@@ -11,7 +11,8 @@ namespace gbc
     {
         initialize();
     }
-    Cartridge::Cartridge(std::vector<u8>&& rom, const HeaderInfo& header_info) : m_rom(std::move(rom)), m_header_info(header_info)
+    Cartridge::Cartridge(std::vector<u8>&& rom, const HeaderInfo& header_info)
+        : m_header_info(header_info), m_rom(std::move(rom)), m_ram(get_ram_size(header_info))
     {
         initialize();
     }
@@ -26,7 +27,7 @@ namespace gbc
             return 0xA;
         else
         {
-            LOG_WARN("Unknown code: {} passed to get_hex()", code);
+            CORE_LOG_WARN("Unknown code: {} passed to get_hex()", code);
             return 0;
         }
     }
@@ -143,7 +144,7 @@ namespace gbc
     std::string message;                                                                                                                   \
     if (!verify_header(hi, message))                                                                                                       \
     {                                                                                                                                      \
-        LOG_ERROR("Failed to load rom: {}", message);                                                                                      \
+        CORE_LOG_ERROR("Failed to load rom: {}", message);                                                                                      \
         return nullptr;                                                                                                                    \
     }                                                                                                                                      \
     if (!s_silent)                                                                                                                         \
@@ -154,7 +155,9 @@ namespace gbc
     case 0x01:                                                                                                                             \
     case 0x02:                                                                                                                             \
     case 0x03: /* MBC1 */ return create_scope<MBC1>(fn(rom), hi);                                                                          \
-    default: /* Capture unimplemented mbc's */ LOG_ERROR("Not yet implemented mbc: {}", get_cartridge_type(hi.mbc_type)); return nullptr;  \
+    default: /* Capture unimplemented mbc's */                                                                                             \
+        CORE_LOG_ERROR("Not yet implemented mbc: {}", get_cartridge_type(hi.mbc_type));                                                    \
+        return nullptr;                                                                                                                    \
     }
 
     Scope<Cartridge> Cartridge::from_rom(const std::vector<u8>& rom) { FROM_ROM_IMPL(); }
@@ -162,25 +165,25 @@ namespace gbc
 
     void log_header_info(const HeaderInfo& hi)
     {
-        LOG_INFO("title: {}", hi.title);
-        LOG_INFO("gbc flag: {}", (hi.gbc_flag & 0x80) ? "Enabled" : "Disabled");
-        LOG_INFO("sgb flag: {}", (hi.sgb_flag == 0x03) ? "Enabled" : "Disabled");
+        CORE_LOG_INFO("title: {}", hi.title);
+        CORE_LOG_INFO("gbc flag: {}", (hi.gbc_flag & 0x80) ? "Enabled" : "Disabled");
+        CORE_LOG_INFO("sgb flag: {}", (hi.sgb_flag == 0x03) ? "Enabled" : "Disabled");
         if (hi.old_licensee_code == 0x33) // New Licensee code
         {
-            LOG_INFO("licensee: {}", get_licensee_code(hi.licensee_code));
+            CORE_LOG_INFO("licensee: {}", get_licensee_code(hi.licensee_code));
         }
         else // Old Licensee code
         {
-            LOG_INFO("licensee: {0:x}", hi.old_licensee_code);
+            CORE_LOG_INFO("licensee: {0:x}", hi.old_licensee_code);
         }
-        LOG_INFO("cartridge type: {}", get_cartridge_type(hi.mbc_type));
-        LOG_INFO("rom size: {}KB ({} banks)", 32 * (1 << hi.rom_size), 2 * (1 << hi.rom_size));
-        u32 ram_banks = get_ram_size(hi);
-        LOG_INFO("ram size: {}KB ({} banks)", 8 * ram_banks, ram_banks);
-        LOG_INFO("destination code: {}", (hi.destination_code == 0) ? "Japan" : "International");
-        LOG_INFO("version number: {}", hi.version_number);
-        LOG_INFO("header checksum: 0x{0:02x}", hi.header_checksum);
-        LOG_INFO("global checksum: 0x{0:04x}", hi.global_checksum);
+        CORE_LOG_INFO("cartridge type: {}", get_cartridge_type(hi.mbc_type));
+        CORE_LOG_INFO("rom size: {}KB ({} banks)", 32 * (1 << hi.rom_size), 2 * (1 << hi.rom_size));
+        u32 ram_banks = get_ram_size(hi) >> 13;
+        CORE_LOG_INFO("ram size: {}KB ({} banks)", 8 * ram_banks, ram_banks);
+        CORE_LOG_INFO("destination code: {}", (hi.destination_code == 0) ? "Japan" : "International");
+        CORE_LOG_INFO("version number: {}", hi.version_number);
+        CORE_LOG_INFO("header checksum: 0x{0:02x}", hi.header_checksum);
+        CORE_LOG_INFO("global checksum: 0x{0:04x}", hi.global_checksum);
     }
 
     bool verify_header(const HeaderInfo& hi, std::string& message)

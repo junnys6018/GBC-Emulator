@@ -10,21 +10,22 @@
 #error Unknown configuration
 #endif
 
-int main(int argc, char* argv[])
-{
-    std::cout << "Running GBC Tests ";
 #if defined(PLATFORM_WINDOWS)
-    std::cout << "(Windows, ";
+static const char* platform_string = "Windows";
 #elif defined(PLATFORM_LINUX)
-    std::cout << "(Linux, ";
+static const char* platform_string = "Linux";
 #endif
 
 #if defined(CONFIGURATION_DEBUG)
-    std::cout << "Debug)\n";
+static const char* configuration_string = "Debug";
 #elif defined(CONFIGURATION_RELEASE)
-    std::cout << "Release)\n";
+static const char* configuration_string = "Release";
 #endif
-    gbc::initialize(spdlog::level::trace, true);
+
+int main(int argc, char* argv[])
+{
+    gbc::initialize(spdlog::level::err, true);
+    CLIENT_LOG_INFO("Running GBC tests ({}, {})", platform_string, configuration_string);
 
     int result = Catch::Session().run(argc, argv);
     return result;

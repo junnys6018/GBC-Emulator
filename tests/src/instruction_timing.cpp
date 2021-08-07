@@ -47,9 +47,6 @@ bool GBCTests::test_instruction_timings()
     // These opcodes have variable execution times, we dont bother testing those
     static std::set<u32> branch_opcodes = {0x20, 0x28, 0x30, 0x38, 0xC0, 0xC2, 0xC4, 0xC8, 0xCA, 0xCC, 0xD0, 0xD2, 0xD4, 0xD8, 0xDA, 0xDC};
 
-    // supress logging
-    Log::set_level(spdlog::level::err);
-
     Scope<GBC> gbc = create_scope<GBC>("roms/blargg/01-special.gb"); // Load any rom, we dont care
     for (u32 opcode = 0; opcode < 256; opcode++)
     {
@@ -62,7 +59,7 @@ bool GBCTests::test_instruction_timings()
         u32 cycles = (gbc->m_cpu.*operation)();
         if (cycles != opcode_timings[opcode])
         {
-            LOG_ERROR("failed opcode {:2X} cycles={}", opcode, cycles);
+            CLIENT_LOG_ERROR("failed opcode {:2X} cycles={}", opcode, cycles);
             return false;
         }
     }
@@ -73,11 +70,10 @@ bool GBCTests::test_instruction_timings()
         u32 cycles = (gbc->m_cpu.*operation)();
         if (cycles != cb_opcode_timings[opcode])
         {
-            LOG_ERROR("failed opcode CB {:2X} cycles={}", opcode, cycles);
+            CLIENT_LOG_ERROR("failed opcode CB {:2X} cycles={}", opcode, cycles);
             return false;
         }
     }
-    Log::set_level(spdlog::level::trace);
 
     return true;
 }
@@ -96,12 +92,12 @@ bool test_blargg_instr_timing()
     }
     if (gbc->get_pc() == failed_routine)
     {
-        LOG_ERROR("Testing {}... Failed! steps={}\n", filename, steps);
+        CLIENT_LOG_ERROR("Testing {}... Failed! steps={}", filename, steps);
         return false;
     }
     else
     {
-        LOG_INFO("Testing {}... Passed!", filename);
+        CLIENT_LOG_INFO("Testing {}... Passed!", filename);
         return true;
     }
 }

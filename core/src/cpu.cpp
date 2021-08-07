@@ -887,14 +887,14 @@ namespace gbc
     i32 CPU::stop()
     {
         // TODO
-        LOG_WARN("Unimplemented opcode stop() called");
+        CORE_LOG_WARN("Unimplemented opcode stop() called");
         return 1;
     }
 
     // opcode: 0x76
     i32 CPU::halt()
     {
-        LOG_TRACE("halted");
+        CORE_LOG_TRACE("halted");
         u8 IE = m_bus->m_registers.m_interrupt_enable;
         u8 IF = m_bus->m_registers.m_interrupt_flag;
         if (!(IE & IF & 0x1F)) // No pending interrupt
@@ -1045,7 +1045,7 @@ namespace gbc
 
     i32 CPU::err()
     {
-        LOG_ERROR("Invalid opcode");
+        CORE_LOG_ERROR("Invalid opcode");
         return 0;
     }
 

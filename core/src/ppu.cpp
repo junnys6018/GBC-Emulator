@@ -101,9 +101,7 @@ namespace gbc
                         // Get tile data
                         u32 fine_y = reg->m_ppu_ly - (y_position - 16);
                         if (attributes & GBC_VERTICAL_FLIP_MASK)
-                        {
                             fine_y = ((reg->m_lcdc & GBC_OBJ_SIZE_MASK) ? 15 : 7) - fine_y;
-                        }
 
                         u16 tile_addr = 0x8000 + 16 * tile_id + 2 * fine_y;
 
@@ -132,7 +130,7 @@ namespace gbc
                     break;
                 }
                 case PPUMode::HBLANK: m_stall = 1; break;
-                case PPUMode::VBLANK: m_stall = 1; break;
+                case PPUMode::VBLANK: m_stall = 4560; break;
                 }
             }
             m_stall--;
@@ -182,6 +180,14 @@ namespace gbc
     }
 
     void PPU::run_until(u64 t_cycle) {}
+
+    std::vector<u8> PPU::dump_bg_tile_map() const
+    {
+        IORegisters* reg = &m_gbc->m_bus.m_registers;
+        u32 start_addr = (reg->m_lcdc & GBC_BG_TILEMAP_AREA_MASK) ? 0x1C00 : 0x1800;
+        auto vram_iter = m_gbc->m_bus.m_vram.begin();
+        return std::vector<u8>(vram_iter + start_addr, vram_iter + start_addr + 0x400);
+    }
 
     u32 PPU::next_event() { return 0; }
 

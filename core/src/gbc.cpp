@@ -43,7 +43,7 @@ namespace gbc
                 m_ppu.clock();
 
             if (clocks == 0)
-                LOG_INFO("GBC halted forever");
+                CORE_LOG_INFO("GBC halted forever");
 
             ASSERT(reg->m_interrupt_flag & 0x1F);
         }

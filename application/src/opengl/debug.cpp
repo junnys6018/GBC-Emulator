@@ -10,9 +10,9 @@ namespace app
     {
         switch (severity)
         {
-        case GL_DEBUG_SEVERITY_HIGH: LOG_ERROR("[OpenGL Debug] {}", message); return;
-        case GL_DEBUG_SEVERITY_MEDIUM: LOG_WARN("[OpenGL Debug] {}", message); return;
-        case GL_DEBUG_SEVERITY_LOW: LOG_INFO("[OpenGL Debug] {}", message); return;
+        case GL_DEBUG_SEVERITY_HIGH: CLIENT_LOG_ERROR("[OpenGL Debug] {}", message); return;
+        case GL_DEBUG_SEVERITY_MEDIUM: CLIENT_LOG_WARN("[OpenGL Debug] {}", message); return;
+        case GL_DEBUG_SEVERITY_LOW: CLIENT_LOG_INFO("[OpenGL Debug] {}", message); return;
         case GL_DEBUG_SEVERITY_NOTIFICATION: return;
         }
     }

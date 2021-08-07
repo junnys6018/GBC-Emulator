@@ -28,7 +28,7 @@ namespace gbc
         case GBC_IOREG_PPU_OBP1: return m_ppu_obp1;
         case GBC_IOREG_PPU_WY: return m_ppu_wy;
         case GBC_IOREG_PPU_WX: return m_ppu_wx;
-        default: LOG_WARN("read to unimplemented io register {:4X}", addr); return 0;
+        default: CORE_LOG_WARN("read to unimplemented io register {:4X}", addr); return 0;
         }
     }
     void IORegisters::cpu_write_byte(u16 addr, u8 byte)
@@ -63,9 +63,9 @@ namespace gbc
         case GBC_IOREG_PPU_LYC: m_ppu_lyc = byte; return;
         case GBC_IOREG_DMA:
             m_dma = byte;
-            LOG_TRACE("oam dma started (page={:2X})", byte);
+            CORE_LOG_TRACE("oam dma started (page={:2X})", byte);
             if (byte >= 0xE0)
-                LOG_ERROR("illegal value {:2X} written to 0xFF46 (dma)");
+                CORE_LOG_ERROR("illegal value {:2X} written to 0xFF46 (dma)");
             m_gbc->m_oam_dma_transfer = 160;
             return;
         case GBC_IOREG_PPU_BGP: m_ppu_bgp = byte; return;
@@ -73,7 +73,7 @@ namespace gbc
         case GBC_IOREG_PPU_OBP1: m_ppu_obp1 = byte; return;
         case GBC_IOREG_PPU_WY: m_ppu_wy = byte; return;
         case GBC_IOREG_PPU_WX: m_ppu_wx = byte; return;
-        default: LOG_WARN("write to unimplemented io register {:4X} {:2X}", addr, byte); return;
+        default: CORE_LOG_WARN("write to unimplemented io register {:4X} {:2X}", addr, byte); return;
         }
     }
     u8 IORegisters::peek_byte(u16 addr) const

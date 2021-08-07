@@ -24,7 +24,7 @@
 
 #include <chrono>
 
-const char* rom = "roms/Tetris.gb";
+const char* rom = "roms/Super Mario Land (World).gb";
 
 namespace app
 {
@@ -39,14 +39,14 @@ namespace app
         }
         else
         {
-            LOG_ERROR("Attempt to call Application::start() more than once");
+            CLIENT_LOG_ERROR("Attempt to call Application::start() more than once");
             exit(EXIT_FAILURE);
         }
     }
 
     Application::Application()
     {
-        gbc::initialize();
+        gbc::initialize(spdlog::level::trace);
         Glfw::initialize();
 
         m_window = create_scope<Window>("GBC Emulator - By Jun Lim", 1550, 870, true);
@@ -203,8 +203,7 @@ namespace app
             u16 addr = static_cast<u16>(m_wait_addr);
             while (m_gbc->get_pc() != addr)
             {
-                m_step_count++;
-                m_gbc->step();
+                m_gbc->clock();
             }
         }
 
@@ -242,6 +241,12 @@ namespace app
             }
         }
 #endif
+
+        if (ImGui::Button("dump bg tilemap"))
+        {
+            auto tilemap = m_gbc->dump_bg_tile_map();
+            write_file("tilemap.bin", tilemap);
+        }
         ImGui::End();
     }
 }

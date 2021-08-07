@@ -28,6 +28,7 @@ namespace gbc
         inline const u8* get_rom() const { return m_cartridge->get_rom(); }
         inline const IORegisters& get_io_reg() const { return m_bus.m_registers; }
         inline const u32* get_framebuffer() const { return m_ppu.get_framebuffer(); }
+        inline std::vector<u8> dump_bg_tile_map() const { return m_ppu.dump_bg_tile_map(); }
 
         u32 next_timer_event() const;
 

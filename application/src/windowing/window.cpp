@@ -14,7 +14,7 @@ namespace app
         m_handle = glfwCreateWindow(w, h, title, NULL, NULL);
         if (m_handle == NULL)
         {
-            LOG_ERROR("Failed to create GLFW window");
+            CLIENT_LOG_ERROR("Failed to create GLFW window");
         }
 
         glfwMakeContextCurrent(m_handle); // this is bad
@@ -22,7 +22,7 @@ namespace app
 
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) // TODO: THIS SHOULD NOT BE HERE
         {
-            LOG_ERROR("Failed to initialize OpenGL context");
+            CLIENT_LOG_ERROR("Failed to initialize OpenGL context");
             exit(EXIT_FAILURE);
         }
 

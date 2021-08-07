@@ -84,6 +84,7 @@ namespace gbc
     inline u8 lsb(u16 data) { return data & 0x00FF; }
 
     std::vector<u8> read_file(const std::string& filename);
+    bool write_file(const std::string& filename, const std::vector<u8>& bytes);
 
     inline u32 bank(u32 bank, u32 bank_size) { return bank * bank_size; }
 

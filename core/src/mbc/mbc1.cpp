@@ -5,12 +5,12 @@ namespace gbc
     MBC1::MBC1(const std::vector<u8>& rom, const HeaderInfo& header_info) : Cartridge(rom, header_info)
     {
         if (header_info.rom_size == 5)
-            LOG_ERROR("not yet implemented 1MB rom");
+            CORE_LOG_ERROR("not yet implemented 1MB rom");
     }
     MBC1::MBC1(std::vector<u8>&& rom, const HeaderInfo& header_info) : Cartridge(std::move(rom), header_info)
     {
         if (header_info.rom_size == 5)
-            LOG_ERROR("not yet implemented 1MB rom");
+            CORE_LOG_ERROR("not yet implemented 1MB rom");
     }
 
     void MBC1::write_cartridge(u16 addr, u8 data)
@@ -22,7 +22,7 @@ namespace gbc
         else if (addr >= 0x2000 && addr < 0x4000)
         {
             m_rom_bank_number.set(data);
-            LOG_TRACE("banked to: {}", get_rom_bank());
+            CORE_LOG_TRACE("banked to: {}", get_rom_bank());
         }
         else if (addr >= 0x4000 && addr < 0x6000)
         {
@@ -31,7 +31,7 @@ namespace gbc
         else if (addr >= 0x6000 && addr < 0x8000)
         {
             m_banking_mode.set(data);
-            LOG_TRACE("banking mode set to: {}", m_banking_mode.get());
+            CORE_LOG_TRACE("banking mode set to: {}", m_banking_mode.get());
         }
         else if (addr >= 0xA000 && addr < 0xC000)
         {
@@ -51,7 +51,7 @@ namespace gbc
             if (m_banking_mode.get() == 0)
                 return m_rom[addr];
             else
-                return m_rom[((u64)m_romram_bank_number.get() << 5) * (u64)0x4000 + addr];
+                return m_rom[(((u64)m_romram_bank_number.get() << 5) & (num_rom_banks() - 1)) * (u64)0x4000 + addr];
         }
         else if (addr >= 0x4000 && addr < 0x8000)
         {
@@ -61,7 +61,7 @@ namespace gbc
         else if (addr >= 0xA000 && addr < 0xC000)
         {
             if (num_ram_banks() == 0)
-                return 0;
+                return 0xFF;
 
             if ((m_ram_enable & 0xF) == 0xA)
             {
@@ -69,7 +69,7 @@ namespace gbc
                 return m_ram[bank * (u64)0x2000 + (addr & 0x1FFF)];
             }
             else
-                return 0;
+                return 0xFF;
         }
         ASSERT(false);
     }
@@ -78,10 +78,10 @@ namespace gbc
     u8 MBC1::get_rom_bank() const
     {
         u8 bank = (m_romram_bank_number.get() << 5) | m_rom_bank_number.get();
-        bank &= (num_rom_banks() - 1);
 
         if ((bank & 0x1F) == 0)
             bank++;
+        bank &= (num_rom_banks() - 1);
 
         return bank;
     }

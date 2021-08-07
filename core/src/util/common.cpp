@@ -17,4 +17,15 @@ namespace gbc
         std::vector<u8> data((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
         return data;
     }
+
+    bool write_file(const std::string& filename, const std::vector<u8>& bytes)
+    {
+        std::ofstream outfile(filename, std::ios::binary);
+        if (outfile.fail())
+            return false;
+
+        outfile.write((const char*)bytes.data(), bytes.size());
+        return true;
+    }
+
 }

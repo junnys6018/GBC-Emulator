@@ -19,6 +19,7 @@ namespace gbc
         void run_until(u64 t_cycle);
         u32 next_event();
         inline const u32* get_framebuffer() const { return &m_framebuffer[m_frontbuffer][0]; }
+        std::vector<u8> dump_bg_tile_map() const;
 
     private:
         enum class PPUMode

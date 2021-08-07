@@ -11,7 +11,7 @@ namespace app
 {
     void ImGuiLayer::initialize(GLFWwindow* window)
     {
-        LOG_INFO("Initializing ImGui");
+        CLIENT_LOG_INFO("Initializing ImGui");
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO();
@@ -41,7 +41,7 @@ namespace app
 
     void ImGuiLayer::shutdown()
     {
-        LOG_INFO("Shutting down ImGui");
+        CLIENT_LOG_INFO("Shutting down ImGui");
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
