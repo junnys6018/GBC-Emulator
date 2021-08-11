@@ -1,5 +1,4 @@
 #pragma once
-#include "divider.h"
 #include "util/common.h"
 
 // joyp masks
@@ -67,10 +66,7 @@ namespace gbc
         u8 peek_byte(u16 addr) const;
 
     public:
-        Divider m_timer;
-
         u8 m_joyp = 0xCF;             // 0xFF00
-        u8 m_divider_register = 0x00; // 0xFF04
         u8 m_timer_counter = 0x00;    // 0xFF05
         u8 m_timer_modulo = 0x00;     // 0xFF06
         u8 m_timer_control = 0xF8;    // 0xFF07

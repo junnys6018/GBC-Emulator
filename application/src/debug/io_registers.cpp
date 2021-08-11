@@ -7,7 +7,7 @@ namespace app
     {
         ImGui::Begin(title);
         const IORegisters& reg = gbc.get_io_reg();
-        ImGui::Text("[%.4X] DIV: %.2X", GBC_IOREG_DIVIDER_REGISTER, reg.m_divider_register);
+        ImGui::Text("[%.4X] DIV: %.2X", GBC_IOREG_DIVIDER_REGISTER, gbc.m_timer.read_divider());
         ImGui::Text("[%.4X] TIMA: %.2X", GBC_IOREG_TIMER_COUNTER, reg.m_timer_counter);
         ImGui::Text("[%.4X] TMA: %.2X", GBC_IOREG_TIMER_MODULO, reg.m_timer_modulo);
         ImGui::Text("[%.4X] TAC: %.2X", GBC_IOREG_TIMER_CONTROL, reg.m_timer_control);

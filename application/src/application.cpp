@@ -24,7 +24,8 @@
 
 #include <chrono>
 
-const char* rom = "roms/Super Mario Land (World).gb";
+//const char* rom = "roms/Super Mario Land (World).gb";
+const char* rom = "../tests/roms/mooneye-gb_hwtests/acceptance/timer/rapid_toggle.gb";
 
 namespace app
 {
@@ -46,7 +47,7 @@ namespace app
 
     Application::Application()
     {
-        gbc::initialize(spdlog::level::trace);
+        gbc::initialize(spdlog::level::info);
         Glfw::initialize();
 
         m_window = create_scope<Window>("GBC Emulator - By Jun Lim", 1550, 870, true);
@@ -194,7 +195,7 @@ namespace app
         ImGui::Text("Count: %i", m_step_count);
         ImGui::SameLine();
         ImGui::Checkbox("Pause", &m_paused);
-        ImGui::Text("Next timer interrupt: %i t-cycles", m_gbc->next_timer_event());
+        ImGui::Text("Next timer interrupt: %i t-cycles", m_gbc->m_timer.next_event());
 
         static char addr_input_buf[64];
         if (ImGui::InputText("goto", addr_input_buf, 64, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_EnterReturnsTrue))

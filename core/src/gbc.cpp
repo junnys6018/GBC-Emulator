@@ -3,7 +3,7 @@
 namespace gbc
 {
     GBC::GBC(const std::string& file)
-        : m_cartridge(Cartridge::from_rom(read_file(file))), m_bus(m_cartridge.get(), this), m_cpu(&m_bus), m_ppu(this), m_div(8)
+        : m_cartridge(Cartridge::from_rom(read_file(file))), m_bus(this), m_cpu(&m_bus), m_ppu(this), m_timer(this)
     {
     }
 
@@ -15,7 +15,7 @@ namespace gbc
             m_cpu.m_halted = false;
             u32 cycles = m_cpu.step() * 4; // Multiply by 4 to convert from m-cycles to t-cycles
             m_total_t_cycles += cycles;
-            clock_timers(cycles);
+            m_timer.clock(cycles);
 
             if (m_oam_dma_transfer)
             {
@@ -28,10 +28,10 @@ namespace gbc
         }
         else
         {
-            u32 clocks = next_timer_event();
+            u32 clocks = m_timer.next_event();
             clocks = clamped_min(clocks, m_ppu.next_event());
             m_total_t_cycles += clocks;
-            clock_timers(clocks);
+            m_timer.clock(clocks);
 
             if (m_oam_dma_transfer)
             {
@@ -65,55 +65,17 @@ namespace gbc
 
             if (m_total_t_cycles % 4 == 0)
                 m_cpu.clock();
-            clock_timers(1);
+            m_timer.clock(1);
             m_ppu.clock();
         }
         else
         {
-            clock_timers(1);
+            m_timer.clock(1);
             m_ppu.clock();
         }
     }
 
     void GBC::set_keys(Keys keys) { m_keys = keys; }
-
-    void GBC::clock_timers(u32 t_clocks)
-    {
-        IORegisters* reg = &m_bus.m_registers;
-        reg->m_divider_register += m_div.add_cycles(t_clocks);
-        if (reg->m_timer_control & GBC_TIMER_ENABLE_MASK)
-        {
-            u32 add = reg->m_timer.add_cycles(t_clocks);
-            for (u32 i = 0; i < add; i++) // TODO: profile this
-            {
-                bool overflow = (reg->m_timer_counter == 0xFF);
-                if (overflow)
-                {
-                    reg->m_timer_counter = reg->m_timer_modulo;
-                    reg->m_interrupt_flag |= GBC_INT_TIMER_MASK;
-                }
-                else
-                {
-                    reg->m_timer_counter++;
-                }
-            }
-        }
-    }
-
-    u32 GBC::next_timer_event() const
-    {
-        const IORegisters* reg = &m_bus.m_registers;
-        if (reg->m_timer_control & GBC_TIMER_ENABLE_MASK)
-        {
-            u32 clocks_to_overflow = 0x100 - (u32)reg->m_timer_counter;
-            clocks_to_overflow--;
-            u32 t_clocks_per_timer_clock = (1 << reg->m_timer.m_period_log2);
-            u32 t_clocks_until_timer = t_clocks_per_timer_clock - reg->m_timer.get_counter();
-            return t_clocks_until_timer + clocks_to_overflow * t_clocks_per_timer_clock;
-        }
-        else
-            return 0;
-    }
 
     void GBC::do_dma_cycles(u32 count)
     {

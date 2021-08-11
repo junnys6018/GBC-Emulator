@@ -4,13 +4,13 @@
 
 namespace gbc
 {
-    IORegisters::IORegisters(GBC* gbc) : m_timer(10), m_gbc(gbc) {}
+    IORegisters::IORegisters(GBC* gbc) : m_gbc(gbc) {}
     u8 IORegisters::cpu_read_byte(u16 addr)
     {
         switch (addr)
         {
         case GBC_IOREG_JOYP: return m_joyp;
-        case GBC_IOREG_DIVIDER_REGISTER: return m_divider_register;
+        case GBC_IOREG_DIVIDER_REGISTER: return m_gbc->m_timer.read_divider();
         case GBC_IOREG_TIMER_COUNTER: return m_timer_counter;
         case GBC_IOREG_TIMER_MODULO: return m_timer_modulo;
         case GBC_IOREG_NR51: return m_nr51;
@@ -33,7 +33,6 @@ namespace gbc
     }
     void IORegisters::cpu_write_byte(u16 addr, u8 byte)
     {
-        static u32 period_lut[4] = {10, 4, 6, 8};
         switch (addr)
         {
         case GBC_IOREG_JOYP:
@@ -46,13 +45,13 @@ namespace gbc
                 m_joyp |= (keys & 0x0F);
             return;
         }
-        case GBC_IOREG_DIVIDER_REGISTER: m_divider_register = 0; return;
+        case GBC_IOREG_DIVIDER_REGISTER: m_gbc->m_timer.write_divider(); return;
         case GBC_IOREG_TIMER_COUNTER: m_timer_counter = byte; return;
         case GBC_IOREG_TIMER_MODULO: m_timer_modulo = byte; return;
         case GBC_IOREG_NR51: m_nr51 = byte; return;
         case GBC_IOREG_TIMER_CONTROL:
+            m_gbc->m_timer.on_tac_write(m_timer_control, byte);
             m_timer_control = byte;
-            m_timer.m_period_log2 = period_lut[m_timer_control & GBC_TIMER_CLOCK_MASK];
             return;
         case GBC_IOREG_INTERRUPT_FLAG: m_interrupt_flag = byte; return;
         case GBC_IOREG_LCDC: m_lcdc = byte; return;

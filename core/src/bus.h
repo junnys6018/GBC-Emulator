@@ -1,6 +1,7 @@
 #pragma once
 #include "cartridge.h"
 #include "io_registers.h"
+#include "timer.h"
 #include "ppu.h"
 #include "util/common.h"
 
@@ -10,7 +11,7 @@ namespace gbc
     class Bus
     {
     public:
-        Bus(Cartridge* cartridge, GBC* gbc);
+        Bus(GBC* gbc);
         u8 cpu_read_byte(u16 addr);
         void cpu_write_byte(u16 addr, u8 byte);
         u8 ppu_read_byte(u16 addr);
@@ -23,6 +24,7 @@ namespace gbc
         friend class GBC;
         friend class CPU;
         friend class PPU;
+        friend class Timer;
 
     private:
         GBC* m_gbc;
