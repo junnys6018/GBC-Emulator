@@ -11,6 +11,7 @@ namespace app
         TiledataWindow();
         void draw_window(const char* title, const GBC& gbc);
         float m_scale = 2;
+
     private:
         Texture m_texture;
     };

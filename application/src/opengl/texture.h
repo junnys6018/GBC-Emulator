@@ -1,6 +1,6 @@
 #pragma once
-#include <glad/glad.h>
 #include "common.h"
+#include <glad/glad.h>
 namespace app
 {
     // Simple RAII wrapper for constructing opengl textures

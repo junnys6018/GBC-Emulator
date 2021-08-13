@@ -144,7 +144,7 @@ namespace gbc
     std::string message;                                                                                                                   \
     if (!verify_header(hi, message))                                                                                                       \
     {                                                                                                                                      \
-        CORE_LOG_ERROR("Failed to load rom: {}", message);                                                                                      \
+        CORE_LOG_ERROR("Failed to load rom: {}", message);                                                                                 \
         return nullptr;                                                                                                                    \
     }                                                                                                                                      \
     if (!s_silent)                                                                                                                         \

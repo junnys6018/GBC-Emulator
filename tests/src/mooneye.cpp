@@ -31,9 +31,9 @@ static const char* timer_roms[] = {
     "roms/mooneye-gb_hwtests/acceptance/timer/tim10_div_trigger.gb",
     "roms/mooneye-gb_hwtests/acceptance/timer/tim11.gb",
     "roms/mooneye-gb_hwtests/acceptance/timer/tim11_div_trigger.gb",
-    //"roms/mooneye-gb_hwtests/acceptance/timer/tima_reload.gb",
-    //"roms/mooneye-gb_hwtests/acceptance/timer/tima_write_reloading.gb",
-    //"roms/mooneye-gb_hwtests/acceptance/timer/tma_write_reloading.gb",
+    "roms/mooneye-gb_hwtests/acceptance/timer/tima_reload.gb",
+    "roms/mooneye-gb_hwtests/acceptance/timer/tima_write_reloading.gb",
+    "roms/mooneye-gb_hwtests/acceptance/timer/tma_write_reloading.gb",
 };
 
 static const char* timer_tilemaps[] = {
@@ -47,9 +47,9 @@ static const char* timer_tilemaps[] = {
     "tilemaps/tim10_div_trigger.bin",
     "tilemaps/tim11.bin",
     "tilemaps/tim11_div_trigger.bin",
-    //"tilemaps/tima_reload.gb",
-    //"tilemaps/tima_write_reloading.gb",
-    //"tilemaps/tma_write_reloading.gb",
+    "tilemaps/tima_reload.bin",
+    "tilemaps/tima_write_reloading.bin",
+    "tilemaps/tma_write_reloading.bin",
 };
 
 static_assert(LENGTH(timer_roms) == LENGTH(timer_tilemaps));

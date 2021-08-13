@@ -24,8 +24,8 @@
 
 #include <chrono>
 
-//const char* rom = "roms/Super Mario Land (World).gb";
-const char* rom = "../tests/roms/mooneye-gb_hwtests/acceptance/timer/rapid_toggle.gb";
+// const char* rom = "roms/Super Mario Land (World).gb";
+const char* rom = "../tests/roms/mooneye-gb_hwtests/acceptance/timer/tima_write_reloading.gb";
 
 namespace app
 {
@@ -195,7 +195,6 @@ namespace app
         ImGui::Text("Count: %i", m_step_count);
         ImGui::SameLine();
         ImGui::Checkbox("Pause", &m_paused);
-        ImGui::Text("Next timer interrupt: %i t-cycles", m_gbc->m_timer.next_event());
 
         static char addr_input_buf[64];
         if (ImGui::InputText("goto", addr_input_buf, 64, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_EnterReturnsTrue))

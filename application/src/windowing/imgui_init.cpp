@@ -21,7 +21,7 @@ namespace app
 
         // Load font
         ImFont* font = io.Fonts->AddFontFromFileTTF("assets/Consola.ttf", 14);
-        //ImGui::PushFont(font);
+        // ImGui::PushFont(font);
 
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();

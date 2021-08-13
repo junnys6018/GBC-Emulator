@@ -46,8 +46,20 @@ namespace gbc
             return;
         }
         case GBC_IOREG_DIVIDER_REGISTER: m_gbc->m_timer.write_divider(); return;
-        case GBC_IOREG_TIMER_COUNTER: m_timer_counter = byte; return;
-        case GBC_IOREG_TIMER_MODULO: m_timer_modulo = byte; return;
+        case GBC_IOREG_TIMER_COUNTER:
+            // Ignore write while tma is loaded to tima (ie when m_tma_blocked is in the range [1..4])
+            if (!m_gbc->m_timer.m_tma_blocked || m_gbc->m_timer.m_tma_blocked > 4) 
+            {
+                m_timer_counter = byte;
+                m_gbc->m_timer.m_tma_reload = 0;
+            }
+            return;
+        case GBC_IOREG_TIMER_MODULO:
+            m_timer_modulo = byte;
+            // Override tima while its reloading
+            if (m_gbc->m_timer.m_tma_blocked) 
+                m_timer_counter = m_timer_modulo;
+            return;
         case GBC_IOREG_NR51: m_nr51 = byte; return;
         case GBC_IOREG_TIMER_CONTROL:
             m_gbc->m_timer.on_tac_write(m_timer_control, byte);

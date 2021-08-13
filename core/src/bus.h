@@ -1,8 +1,8 @@
 #pragma once
 #include "cartridge.h"
 #include "io_registers.h"
-#include "timer.h"
 #include "ppu.h"
+#include "timer.h"
 #include "util/common.h"
 
 namespace gbc

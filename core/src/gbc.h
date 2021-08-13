@@ -1,9 +1,9 @@
 #pragma once
 #include "bus.h"
 #include "cpu.h"
-#include "timer.h"
 #include "io_registers.h"
 #include "ppu.h"
+#include "timer.h"
 #include "util/log.h"
 
 namespace gbc
@@ -39,6 +39,7 @@ namespace gbc
         friend class Timer;
 
         Timer m_timer;
+
     private:
         Scope<Cartridge> m_cartridge;
         Bus m_bus;

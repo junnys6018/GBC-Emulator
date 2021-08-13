@@ -9,12 +9,12 @@
 #define DEBUGBREAK() raise(SIGTRAP)
 #endif
 
-#define ASSERT(x)                                                                                                                \
-    {                                                                                                                            \
-        if (!(x))                                                                                                                \
-        {                                                                                                                        \
-            DEBUGBREAK();                                                                                                   \
-        }                                                                                                                        \
+#define ASSERT(x)                                                                                                                          \
+    {                                                                                                                                      \
+        if (!(x))                                                                                                                          \
+        {                                                                                                                                  \
+            DEBUGBREAK();                                                                                                                  \
+        }                                                                                                                                  \
     }
 
 #else

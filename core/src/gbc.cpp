@@ -31,6 +31,7 @@ namespace gbc
             u32 clocks = m_timer.next_event();
             clocks = clamped_min(clocks, m_ppu.next_event());
             m_total_t_cycles += clocks;
+
             m_timer.clock(clocks);
 
             if (m_oam_dma_transfer)
@@ -44,8 +45,6 @@ namespace gbc
 
             if (clocks == 0)
                 CORE_LOG_INFO("GBC halted forever");
-
-            ASSERT(reg->m_interrupt_flag & 0x1F);
         }
     }
 
