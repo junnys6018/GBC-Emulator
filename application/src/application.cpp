@@ -68,6 +68,7 @@ namespace app
 
     Application::~Application()
     {
+        m_window.reset();
         ImGuiLayer::shutdown();
         Glfw::shutdown();
     }

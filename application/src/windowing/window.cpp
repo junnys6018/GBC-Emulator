@@ -10,19 +10,24 @@ namespace app
 {
     Window::Window(const char* title, u32 w, u32 h, bool resizable)
     {
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_RESIZABLE, resizable);
+
         m_handle = glfwCreateWindow(w, h, title, NULL, NULL);
         if (m_handle == NULL)
         {
             CLIENT_LOG_ERROR("Failed to create GLFW window");
+            return;
         }
 
-        glfwMakeContextCurrent(m_handle); // this is bad
+        glfwMakeContextCurrent(m_handle);
         glfwSwapInterval(1);
 
-        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) // TODO: THIS SHOULD NOT BE HERE
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         {
-            CLIENT_LOG_ERROR("Failed to initialize OpenGL context");
+            CLIENT_LOG_ERROR("Failed to initialize glad loader");
             exit(EXIT_FAILURE);
         }
 
@@ -34,7 +39,12 @@ namespace app
         WindowManager::add(this);
         m_input.set_window(m_handle);
     }
-    Window::~Window() { WindowManager::remove(this); }
+
+    Window::~Window()
+    {
+        WindowManager::remove(this);
+        glfwDestroyWindow(m_handle);
+    }
 
     std::pair<u32, u32> Window::get_size()
     {
