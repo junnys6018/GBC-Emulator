@@ -11,8 +11,9 @@ namespace app
         bool is_key_down(i32 key);
 
     public:
-        EventEmitter<i32> m_on_key_pressed;
-        EventEmitter<i32> m_on_key_released;
+        EventEmitter<i32, i32, i32> m_on_key_pressed;
+        EventEmitter<i32, i32, i32> m_on_key_released;
+        EventEmitter<GLFWwindow*> m_on_window_close;
 
     private:
         GLFWwindow* m_window = nullptr;

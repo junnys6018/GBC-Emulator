@@ -5,6 +5,9 @@
 namespace app
 {
     std::vector<Window*> WindowManager::s_windows;
+    EventEmitter<i32, i32, i32> WindowManager::s_on_key_pressed;
+    EventEmitter<i32, i32, i32> WindowManager::s_on_key_released;
+    EventEmitter<GLFWwindow*> WindowManager::s_on_window_close;
 
     void WindowManager::add(Window* window)
     {

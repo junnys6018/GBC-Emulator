@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 
 #include "windowing/window.h"
+#include "windowing/message_queue.h"
 using namespace gbc;
 
 namespace app
@@ -11,20 +12,27 @@ namespace app
     {
     public:
         static Application* start(int argc, char** argv);
-        void run();
+        void run_gbc();
+        void run_debug();
         ~Application();
 
     private:
         Application();
-        void draw_cpu_window();
+        void setup_event_listeners();
 
     private:
         Scope<GBC> m_gbc;
-        Scope<Window> m_window;
+        Scope<Window> m_gbc_window;
+        Scope<Window> m_debug_window;
+        Scope<std::thread> m_gbc_thread;
 
-        // IMGUI variables
+        MessageQueue m_debug_queue;
+        MessageQueue m_gbc_queue;
+
+        std::string m_current_rom = "roms/Super Mario Land (World).gb";
+
+        // imgui variables
         bool m_paused = true;
-        u32 m_step_count = 0;
         i32 m_wait_addr = 0;
 
         static bool s_initialized;

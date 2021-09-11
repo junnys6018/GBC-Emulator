@@ -5,30 +5,39 @@
 namespace app
 {
 
-    template <typename T>
+    template <typename... Args>
     class EventEmitter;
 
-    template <typename T>
+    template <typename... Args>
     class ScopedEventListener
     {
     private:
-        EventEmitter<T>* m_emitter;
+        EventEmitter<Args...>* m_emitter;
         u32 m_id;
 
     public:
-        ScopedEventListener(EventEmitter<T>* emitter, u32 listener_id);
-        ScopedEventListener(const ScopedEventListener<T>& other) = delete;
-        ScopedEventListener<T>& operator=(const ScopedEventListener<T>& other) = delete;
-        ScopedEventListener(ScopedEventListener<T>&& other);
-        ScopedEventListener<T>& operator=(ScopedEventListener<T>&& other);
-        ~ScopedEventListener();
+        ScopedEventListener(EventEmitter<Args...>* emitter, u32 listener_id) : m_emitter(emitter), m_id(listener_id) {}
+        ScopedEventListener(const ScopedEventListener<Args...>& other) = delete;
+        ScopedEventListener<Args...>& operator=(const ScopedEventListener<Args...>& other) = delete;
+        ScopedEventListener(ScopedEventListener<Args...>&& other) : m_emitter(other.m_emitter), m_id(other.m_id) { other.m_emitter = nullptr; }
+        ScopedEventListener<Args...>& operator=(ScopedEventListener<Args...>&& other)
+        {
+            std::swap(m_emitter, other.m_emitter);
+            std::swap(m_id, other.m_id);
+            return *this;
+        }
+        ~ScopedEventListener()
+        {
+            if (m_emitter)
+                m_emitter->remove_event_listener(m_id);
+        }
     };
 
-    template <typename T>
+    template <typename... Args>
     class EventEmitter
     {
     public:
-        using Listener = std::function<bool(const T&)>;
+        using Listener = std::function<bool(const Args&...)>;
 
     private:
         struct ListenerContainer
@@ -50,9 +59,9 @@ namespace app
             return id;
         }
 
-        ScopedEventListener<T> add_scoped_event_listener(const Listener& listener)
+        ScopedEventListener<Args...> add_scoped_event_listener(const Listener& listener)
         {
-            return ScopedEventListener<T>(this, add_event_listener(listener));
+            return ScopedEventListener<Args...>(this, add_event_listener(listener));
         }
 
         bool remove_event_listener(u32 listener)
@@ -67,12 +76,12 @@ namespace app
             return false;
         }
 
-        bool trigger(const T& evt) const
+        bool trigger(const Args&... args) const
         {
             bool handled = false;
             for (size_t i = 0; i < m_listeners.size() && !handled; i++)
             {
-                handled |= m_listeners[i].callback(evt);
+                handled |= m_listeners[i].callback(args...);
             }
             return handled;
         }
@@ -80,31 +89,4 @@ namespace app
     private:
         u32 get_next_id() { return m_next_id++; }
     };
-
-    template <typename T>
-    ScopedEventListener<T>::ScopedEventListener(EventEmitter<T>* emitter, u32 listener_id) : m_emitter(emitter), m_id(listener_id)
-    {
-    }
-
-    template <typename T>
-    ScopedEventListener<T>::ScopedEventListener(ScopedEventListener<T>&& other) : m_emitter(other.m_emitter), m_id(other.m_id)
-    {
-        other.m_emitter = nullptr;
-    }
-
-    template <typename T>
-    ScopedEventListener<T>& ScopedEventListener<T>::operator=(ScopedEventListener<T>&& other)
-    {
-        std::swap(m_emitter, other.m_emitter);
-        std::swap(m_id, other.m_id);
-        return *this;
-    }
-
-    template <typename T>
-    ScopedEventListener<T>::~ScopedEventListener()
-    {
-        if (m_emitter)
-            m_emitter->remove_event_listener(m_id);
-    }
-
 }

@@ -14,9 +14,21 @@ namespace app
             switch (action)
             {
             case GLFW_REPEAT:
-            case GLFW_PRESS: input.m_on_key_pressed.trigger(key); break;
-            case GLFW_RELEASE: input.m_on_key_released.trigger(key); break;
+            case GLFW_PRESS:
+                WindowManager::s_on_key_pressed.trigger(key, scancode, mods);
+                input.m_on_key_pressed.trigger(key, scancode, mods);
+                break;
+            case GLFW_RELEASE:
+                WindowManager::s_on_key_released.trigger(key, scancode, mods);
+                input.m_on_key_released.trigger(key, scancode, mods);
+                break;
             }
+        });
+
+        glfwSetWindowCloseCallback(m_window, [](GLFWwindow* window) {
+            WindowManager::s_on_window_close.trigger(window);
+            Input& input = WindowManager::get_input(window);
+            input.m_on_window_close.trigger(window);
         });
     }
 

@@ -11,6 +11,8 @@ namespace app
         Window(const char* title, u32 w, u32 h, bool resizable);
         Window(const Window&) = delete;
         Window& operator=(const Window&) = delete;
+        Window(Window&& other) noexcept;
+        Window& operator=(Window&& other) noexcept;
         ~Window();
 
         std::pair<u32, u32> get_size();

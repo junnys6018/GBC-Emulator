@@ -29,6 +29,7 @@ namespace gbc
         inline const IORegisters& get_io_reg() const { return m_bus.m_registers; }
         inline const u32* get_framebuffer() const { return m_ppu.get_framebuffer(); }
         inline std::vector<u8> dump_bg_tile_map() const { return m_ppu.dump_bg_tile_map(); }
+        inline u64 get_m_cycles() const { return m_total_t_cycles / 4; }
 
 #if defined(GBC_COMPILE_TESTS)
         friend class ::GBCTests;

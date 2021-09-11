@@ -40,10 +40,32 @@ namespace app
         m_input.set_window(m_handle);
     }
 
+    Window::Window(Window&& other) noexcept : m_input(other.m_input), m_handle(other.m_handle)
+    {
+        WindowManager::add(this);
+
+        WindowManager::remove(&other);
+        other.m_handle = nullptr;
+    }
+
+    Window& Window::operator=(Window&& other) noexcept
+    {
+        m_input = other.m_input;
+        m_handle = other.m_handle;
+        WindowManager::add(this);
+
+        WindowManager::remove(&other);
+        other.m_handle = nullptr;
+        return *this;
+    }
+
     Window::~Window()
     {
-        WindowManager::remove(this);
-        glfwDestroyWindow(m_handle);
+        if (m_handle)
+        {
+            WindowManager::remove(this);
+            glfwDestroyWindow(m_handle);
+        }
     }
 
     std::pair<u32, u32> Window::get_size()
