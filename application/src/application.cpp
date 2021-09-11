@@ -9,6 +9,7 @@
 #include <imgui.h>
 
 #include "windowing/window_manager.h"
+#include "lcd_renderer.h"
 
 #include "debug/cpu.h"
 #include "debug/disassembly.h"
@@ -105,7 +106,7 @@ namespace app
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         static std::chrono::steady_clock clock;
-
+        static LCDRenderer lcd_renderer;
         u32 cycle = 0;
         i32 inc = cycle / 144;
         // Game loop
@@ -114,6 +115,8 @@ namespace app
 
         while (!glfwWindowShouldClose(m_gbc_window->m_handle))
         {
+            glClear(GL_COLOR_BUFFER_BIT);
+
             Message message;
             while (m_gbc_queue.pop_front(message))
             {
@@ -161,6 +164,9 @@ namespace app
                 }
             }
 
+            // Draw the screen
+            lcd_renderer.render(m_gbc->get_framebuffer());
+
             auto tp = clock.now();
             using my_duration = std::chrono::duration<double, std::ratio<1, 1>>;
             if (!m_paused)
@@ -174,7 +180,6 @@ namespace app
             }
             beg = tp;
 
-            glClear(GL_COLOR_BUFFER_BIT);
             m_gbc_window->swap_buffers();
         }
         m_debug_queue.push_back(Message(MessageType::GBC_WINDOW_SHUTDOWN));
@@ -197,6 +202,7 @@ namespace app
         while (true)
         {
             Glfw::poll_events();
+            glClear(GL_COLOR_BUFFER_BIT);
 
             Message message;
             while (m_debug_queue.pop_front(message))
@@ -219,9 +225,6 @@ namespace app
             tilemap_window.draw_window("Tilemap", *m_gbc);
             lcd_window.draw_window("LCD", *m_gbc);
             cpu_window.draw_window("CPU", *m_gbc, m_gbc_queue);
-
-            // Clear the colorbuffer
-            glClear(GL_COLOR_BUFFER_BIT);
 
             ImGui::ShowDemoWindow();
 

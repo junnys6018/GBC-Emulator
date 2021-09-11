@@ -1,6 +1,7 @@
 #pragma once
 #include <gbc.h>
 #include <glad/glad.h>
+#include <thread>
 
 #include "windowing/window.h"
 #include "windowing/message_queue.h"
